@@ -23,7 +23,7 @@ on:
       - 'master'
       - 'main'
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "*/21 * * * *"
 jobs:
   clean-runs:
     runs-on: ubuntu-latest
