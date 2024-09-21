@@ -1,8 +1,9 @@
 echo "Loading"
 
-mkdir /app;
+mkdir ./app;
 cp *.sh *.py /app
-cd /app
+
+cd ./app
 time bash run.sh
 
 time sync

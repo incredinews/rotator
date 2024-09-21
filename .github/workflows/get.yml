@@ -1,9 +1,9 @@
 name: Get Feeds and cleanup old runs
 env:
-  DBSTRING: ${{secrets.DBSTRING}}
+  #DBSTRING: ${{secrets.DBSTRING}}
   GIST_TOKEN: ${{secrets.GIST_TOKEN}}
   GIT_USER: ${{secrets.GIT_USER}}
-  GIST_ID:  ${{ secrets.GIST_ID }}
+  GIST_ID:  ${{secrets.GIST_ID }}
   #GIST_ID:  ${{ vars.GIST_ID }}
 
 concurrency:
@@ -55,7 +55,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            /app
+            ./app
+          #key: ${{ runner.OS }}-npm-cache-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.OS }}-action-cache
       - name: Run service 
         run: |
               test -e logs || mkdir logs ;

@@ -68,7 +68,7 @@ done
                   
             git status --porcelain|wc -l |grep -q 0 || {
                 echo "pushing "$(git remote -v |head -n 1)
-                git status
+                git status 2>&1|grep -e modified -e ndert -e json
                 git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/$id
                 git add -A ;git commit -m "updates $(date -u)";git push 
                 echo -n ; } ;
