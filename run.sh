@@ -2,7 +2,7 @@
 which ff || exit 1
 
 git config --global user.name "User.Name"
-git config --global user.mail "gist@github.com"
+git config --global user.email "gist@github.com" 
 
  
  STARTDIR=$(pwd)
