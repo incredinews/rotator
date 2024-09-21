@@ -1,6 +1,10 @@
 #/bin/bash 
 which ff || exit 1
-  
+
+git config --global user.name "User.Name"
+git config --global user.mail "gist@github.com"
+
+ 
  STARTDIR=$(pwd)
  echo "cloning "
  
