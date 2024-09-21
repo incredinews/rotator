@@ -1,7 +1,7 @@
 echo "Loading"
 
 mkdir ./app;
-cp *.sh *.py /app
+cp *.sh *.py ./app
 
 cd ./app
 time bash run.sh
