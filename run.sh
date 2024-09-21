@@ -1,9 +1,11 @@
- 
+#/bin/bash 
+which ff || exit 1
+  
  STARTDIR=$(pwd)
  echo "cloning "
  
  echo git clone https://gist.github.com/${GIST_ID}.git index;
- git clone https://gist.github.com/${GIST_ID}.git index;
+ timeout 10 git clone https://gist.github.com/${GIST_ID}.git index || git clone  https://$GIT_USER:$GIST_TOKEN@gist.github.com/$GIST_ID index ;
  
  cd index || exit 1
  
