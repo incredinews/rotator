@@ -1,0 +1,63 @@
+name: Get Feeds and cleanup old runs
+env:
+  DBSTRING: ${{secrets.DBSTRING}}
+  GIST_TOKEN: ${{secrets.GIST_TOKEN}}
+  GIT_USER: ${{secrets.GIT_USER}}
+  GIST_ID:  ${{ secrets.GIST_ID }}
+  #GIST_ID:  ${{ vars.GIST_ID }}
+
+concurrency:
+  group: feeder-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+on:
+  push:
+    paths:
+      - json-to-db.py
+      - run.sh
+      - feeds/*
+      - action.sh
+      - docker-compose.yml
+      - .github/workflows/*
+    branches:
+      - 'master'
+      - 'main'
+  schedule:
+    - cron: "*/15 * * * *"
+jobs:
+  clean-runs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete workflow runs
+        uses: Mattraks/delete-workflow-runs@main
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 0
+          keep_minimum_runs: 2
+
+  bash-script:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/incredinews/rotator:squashed
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+#      - name: Sleep for 10 seconds
+#        uses: jakejarvis/wait-action@master
+#        with:
+#          time: '10s'
+      - name: WHOAMI
+        run: bash -c "id -u;id -un"
+#      - name: WAITFORBUILD
+#        run: bash -c 'grep "image:" docker-compose.yml |grep -v "#" |while read docker img ;do docker  pull $img  & done ;sleep 17 ;(docker image ls | grep incredinews|grep rotator|grep squashedkinto) || (echo "missing images";docker image ls ;sleep 240 ;docker pull ghcr.io/incredinews/rotator:squashedkinto )'|| true
+      - name: Cache Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            /app
+      - name: Run service 
+        run: |
+              test -e logs || mkdir logs ;
+              bash action.sh 2>&1
+        #run: echo disabled
