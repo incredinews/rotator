@@ -55,7 +55,7 @@ jobs:
              bash -c "source /etc/venv/bin/activate;pip install docker-squash"|| true
              ( docker-squash -t  ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:squashed ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }} && docker push  ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:squashed ) || true 
              docker image ls |grep ${{ github.repository_owner }}/${{ github.event.repository.name }}
-      -
+#      -
 #        name: squash and show kinto
 #        run: |
 #             docker pull kinto/kinto-server:latest || true 
