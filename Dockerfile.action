@@ -1,0 +1,2 @@
+FROM ghcr.io/incredinews/rotator:squashed
+COPY . /repo

@@ -38,7 +38,7 @@ jobs:
           retain_days: 0
           keep_minimum_runs: 2
 
-  bash-script:
+  feed-update:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/incredinews/rotator:squashed
@@ -52,7 +52,7 @@ jobs:
       - name: WHOAMI
         run: bash -c "id -u;id -un"
 #      - name: WAITFORBUILD
-#        run: bash -c 'grep "image:" docker-compose.yml |grep -v "#" |while read docker img ;do docker  pull $img  & done ;sleep 17 ;(docker image ls | grep incredinews|grep rotator|grep squashedkinto) || (echo "missing images";docker image ls ;sleep 240 ;docker pull ghcr.io/incredinews/rotator:squashedkinto )'|| true
+        run: bash -c 'grep "image:" docker-compose.yml |grep -v "#" |while read docker img ;do docker  pull $img  & done ;sleep 17 ;(docker image ls | grep incredinews|grep rotator|grep squashedkinto) || (echo "missing images";docker image ls ;sleep 240 )'|| true
       - name: Restore cached Primes
         id: cache-primes-restore
         uses: actions/cache/restore@v4
@@ -65,11 +65,12 @@ jobs:
       - name: Run service 
         run: |
               pwd
-              cp -rv $(pwd)/ /home/runner/work/_temp/_github_home/
-              ( cd /home/runner/work/_temp/_github_home/$(basename $(pwd)); test -e logs || mkdir logs ; bash action.sh 2>&1) || exit 1
-              (test -e /home/runner/work/_temp/_github_home/$(basename $(pwd))/logs && mv /home/runner/work/_temp/_github_home/$(basename $(pwd))/logs . )
-              (test -e /home/runner/work/_temp/_github_home/$(basename $(pwd))/cache && mv /home/runner/work/_temp/_github_home/$(basename $(pwd))/cache . )
-              echo done
+              bash action.sh
+#              cp -rv $(pwd)/ /home/runner/work/_temp/_github_home/
+#              ( cd /home/runner/work/_temp/_github_home/$(basename $(pwd)); test -e logs || mkdir logs ; bash action.sh 2>&1) || exit 1
+#              (test -e /home/runner/work/_temp/_github_home/$(basename $(pwd))/logs && mv /home/runner/work/_temp/_github_home/$(basename $(pwd))/logs . )
+#              (test -e /home/runner/work/_temp/_github_home/$(basename $(pwd))/cache && mv /home/runner/work/_temp/_github_home/$(basename $(pwd))/cache . )
+#              echo done
         #run: echo disabled
       - name: Save Primes
         id: cache-primes-save

@@ -1,5 +1,5 @@
 echo "Loading"
-
+pwd
 mkdir ./app;
 test -e app/logs|| mkdir app/logs
 

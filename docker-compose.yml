@@ -3,17 +3,43 @@ version: "3"
 networks:
   loki:
 
+
+volumes:
+  log-data:
+  driver: local
+
 services:
 #  flog-log:
 #  image: mingrammer/flog
 #  command: "-f json -t log -l -w -d 5s -o /etc/data/data.log"
 #  volumes:
 #    - app/logs:/logs
-  fluent-bit:
-    image:  grafana/fluent-bit-plugin-loki:main
-#CMD ["/fluent-bit/bin/fluent-bit", "-e","/fluent-bit/bin/out_grafana_loki.so", "-c", "/fluent-bit/etc/fluent-bit.conf"]
+  action:
+    #image:  ghcr.io/incredinews/rotator:squashed
+    depends_on:
+      - loki
+    networks:
+      - loki
+    build:
+      context: .
+      dockerfile: Dockerfile.action
+#    volumes:
+#      - /repo/app/logs:/logs
     volumes:
-      - /github/home/fluent-conf/:/fluent-etc/:ro
-      - /github/home/fluent-conf/:/fluent-bit/etc/:ro
-      - /github/home/app/logs:/logs
+      - log-data:/repo/app/logs
+    command /bin/bash -c " cd /repo && bash action.sh"
+  loki:
+    #image:  grafana/fluent-bit-plugin-loki:main
+    build:
+      context: .
+      dockerfile: Dockerfile.loki
+#CMD ["/fluent-bit/bin/fluent-bit", "-e","/fluent-bit/bin/out_grafana_loki.so", "-c", "/fluent-bit/etc/fluent-bit.conf"]
+    networks:
+      - loki
+volumes:
+    - log-data:logs
+#    volumes:
+#      - ./fluent-conf/:/fluent-etc/:ro
+#      - ./fluent-conf/:/fluent-bit/etc/:ro
+#      - ./app/logs:/logs
   #docker run -d -i --name NAME --mount type=bind,src="${{ runner.temp }}/scenarios",target="/data" --entrypoint /bin/bash myImage:$VERSION
