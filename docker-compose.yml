@@ -35,8 +35,8 @@ services:
 #CMD ["/fluent-bit/bin/fluent-bit", "-e","/fluent-bit/bin/out_grafana_loki.so", "-c", "/fluent-bit/etc/fluent-bit.conf"]
     networks:
       - loki
-volumes:
-    - log-data:logs
+    volumes:
+      - log-data:logs
 #    volumes:
 #      - ./fluent-conf/:/fluent-etc/:ro
 #      - ./fluent-conf/:/fluent-bit/etc/:ro
