@@ -27,7 +27,8 @@ services:
     volumes:
       - cache-data:/extcache/
       - /var/run/docker.sock:/var/run/docker.sock
-    command: /bin/bash -c 'docker ps -a >&2 ;sleep 30; while (docker ps -a |grep action|grep -q -e reated -e unning  -e Up);do docker ps -a |grep action>&2;echo "still running" &>2;sleep 30;done;cd /extcache/cache && cd /extcache && tar cvz cache/'
+    #command: /bin/bash -c 'docker ps -a >&2 ;sleep 30; while (docker ps -a |grep action|grep -q -e reated -e unning  -e Up);do docker ps -a |grep action>&2;echo "still running" &>2;sleep 30;done;cd /extcache/cache && cd /extcache && tar cvz cache/'
+    command: /bin/bash -c 'docker ps -a >&2 ;sleep 30; while (docker ps -a |grep action|grep -q -e reated -e unning  -e Up);do docker ps -a |grep action>&2;echo "still running" &>2;sleep 30;done;echo waiting for cachhe-fetcher ;sleep 120'
   action:
     #image:  ghcr.io/incredinews/rotator:squashed
     depends_on:
@@ -43,6 +44,13 @@ services:
       - log-data:/repo/app/logs
       - cache-data:/extcache
     command: /bin/bash -c " cd /repo && bash action.sh"
+    environment:
+        GIT_USER: ${GIT_USER}
+        GIST_ID: ${GIST_ID}
+        GIST_TOKEN: ${GIST_TOKEN}
+        CF_PAGESPROJECT: ${CF_PAGESPROJECT}
+        CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN}
+        
   loki:
     depends_on:
       - bootstrap

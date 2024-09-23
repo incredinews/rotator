@@ -8,6 +8,12 @@ test -e logs || mkdir logs
 cd cache || exit 1
 STARTDIR=$(pwd)
 
+[[ -z "$GIST_TOKEN" ]] && echo NO GIST_TOKEN
+[[ -z "$GIST_TOKEN" ]] && exit 1
+[[ -z "$GIST_ID" ]] && echo NO GISTID
+[[ -z "$GIST_ID" ]] && exit 1
+
+
 echo "cloning "
 
 test -e ${PARDIR}/logs && (
