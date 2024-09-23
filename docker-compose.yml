@@ -27,7 +27,7 @@ services:
     volumes:
       - cache-data:/extcache
       - /var/run/docker.sock:/var/run/docker.sock
-    command: /bin/bash -c 'docker ps -a >&2 ;sleep 30; while (docker ps -a |grep action|grep -q -e reated -e unning );do docker ps -a |grep action>&2;echo "still running" &>2;done;sleep 10;cd /app/cache && cd /app && tar cvz cache/'
+    command: /bin/bash -c 'docker ps -a >&2 ;sleep 30; while (docker ps -a |grep action|grep -q -e reated -e unning  -e Up);do docker ps -a |grep action>&2;echo "still running" &>2;done;sleep 10;cd /app/cache && cd /app && tar cvz cache/'
   action:
     #image:  ghcr.io/incredinews/rotator:squashed
     depends_on:
