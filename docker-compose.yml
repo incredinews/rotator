@@ -10,8 +10,8 @@ services:
 #  volumes:
 #    - app/logs:/logs
   fluent-bit:
-    image: fluent/fluent-bit
+    image:  grafana/fluent-bit-plugin-loki:main
     command: --config=/fluent-bit/etc/fluent-bit.conf
     volumes:
       - ./fluent-conf/:/fluent-bit/etc/:ro
-      - ./app/logs:/etc/data
+      - ./app/logs:/logs
