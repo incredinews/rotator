@@ -42,7 +42,7 @@ jobs:
       image: ghcr.io/incredinews/rotator:squashed
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+      uses: actions/checkout@v4
 #      - name: Sleep for 10 seconds
 #        uses: jakejarvis/wait-action@master
 #        with:
@@ -51,32 +51,32 @@ jobs:
         run: bash -c "id -u;id -un"
 #      - name: WAITFORBUILD
 #        run: bash -c 'grep "image:" docker-compose.yml |grep -v "#" |while read docker img ;do docker  pull $img  & done ;sleep 17 ;(docker image ls | grep incredinews|grep rotator|grep squashedkinto) || (echo "missing images";docker image ls ;sleep 240 ;docker pull ghcr.io/incredinews/rotator:squashedkinto )'|| true
-    - name: Restore cached Primes
-      id: cache-primes-restore
-      uses: actions/cache/restore@v4
-      with:
-        path: |
-          cache
-        key: ${{ runner.os }}-primes
+      - name: Restore cached Primes
+        id: cache-primes-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            cache
+          key: ${{ runner.os }}-primes
 
-    - name: Run service 
-      run: |
-            test -e logs || mkdir logs ;
-            bash action.sh 2>&1
-      #run: echo disabled
-    - name: Save Primes
-      id: cache-primes-save
-      uses: actions/cache/save@v4
-      with:
-        path: |
-          cache
-          logs/main.log
-        key: ${{ steps.cache-primes-restore.outputs.cache-primary-key }}
-
-    - name: Archive production artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: dist-without-markdown
-        path: |
-          logs
-          logs/*
+      - name: Run service 
+        run: |
+              test -e logs || mkdir logs ;
+              bash action.sh 2>&1
+        #run: echo disabled
+      - name: Save Primes
+        id: cache-primes-save
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            cache
+            logs/main.log
+          key: ${{ steps.cache-primes-restore.outputs.cache-primary-key }}
+      
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-without-markdown
+          path: |
+            logs
+            logs/*
