@@ -3,10 +3,9 @@ version: "3"
 networks:
   loki:
 
-
 volumes:
   log-data:
-  driver: local
+    driver: local
 
 services:
 #  flog-log:

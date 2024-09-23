@@ -51,6 +51,10 @@ jobs:
 #          time: '10s'
       - name: WHOAMI
         run: bash -c "id -u;id -un"
+      - name: test compose
+        run: |
+              pwd
+              docker-compose config
       - name: WAITFORBUILD
         run: bash -c 'for img in $(grep "image:" docker-compose.yml |grep -v "#" ;cat Dockerfil*|grep FROM|sed "s/FROM//g" ) ;do docker  pull $img  & done ;wait'|| true
       - name: Restore cached Primes
