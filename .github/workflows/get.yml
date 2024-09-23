@@ -62,15 +62,15 @@ jobs:
             pages
           key: ${{ runner.os }}-cache
 
-      - name: WAIT ON BUILD
-        run: |
-              pwd
-              sleep 240
-        on:
-          push:
-            paths:
-              - Dockerfile
-              - .github/workflows/build.yml
+#      - name: WAIT ON BUILD
+#        run: |
+#              pwd
+#              sleep 240
+#        on:
+#          push:
+#            paths:
+#              - Dockerfile
+#              - .github/workflows/build.yml
       - name: Run service 
         run: |
               pwd
