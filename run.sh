@@ -12,13 +12,13 @@ test -e ${PARDIR}/logs && (
 test -e ${PARDIR}/logs && ( cd ${PARDIR}/logs || ( rm -rf ${PARDIR}/logs;mkdir ${PARDIR}/logs) );
 )
 
-test -e ${PARDIR}/logs && (
-echo found log path )
+
  
 test -e ${PARDIR}/pages && (
 test -e ${PARDIR}/pages && ( cd ${PARDIR}/logs || ( rm -rf ${PARDIR}/pages;mkdir ${PARDIR}/pages) );
 )
-
+test -e ${PARDIR}/pages || mkdir test -e ${PARDIR}/pages
+test -e ${PARDIR}/logs  || mkdir test -e ${PARDIR}/logs
 test -e ${PARDIR}/logs  && (   echo found log path )
 test -e ${PARDIR}/pages && ( echo found pages path )
  
