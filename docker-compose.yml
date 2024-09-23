@@ -6,6 +6,8 @@ networks:
 volumes:
   log-data:
     driver: local
+  cache-data:
+    driver: local
 
 services:
 #  flog-log:
@@ -18,6 +20,16 @@ services:
     volumes:
       - log-data:/repo/app/logs
     command: /bin/bash -c "cd /repo/app/logs/;while (true);do touch main.log curl.log fetch.log pages.log;sleep 120;done"
+  finish:
+    image:  ghcr.io/incredinews/rotator:squashed
+    depends_on:
+      - action
+    volumes:
+      - log-data:/repo/app/logs
+      - cache-data:/extcache
+      - /var/run/docker.sock:/var/run/docker.sock
+      
+    command: /bin/bash -c " cd /repo && bash action.sh"
   action:
     #image:  ghcr.io/incredinews/rotator:squashed
     depends_on:
@@ -31,6 +43,7 @@ services:
 #      - /repo/app/logs:/logs
     volumes:
       - log-data:/repo/app/logs
+      - cache-data:/extcache
     command: /bin/bash -c " cd /repo && bash action.sh"
   loki:
     depends_on:

@@ -87,7 +87,9 @@ jobs:
               #docker compose up
               docker compose up -d loki
               docker compose logs --follow loki &
-              docker compose up action
+              #docker compose up action
+              (sleep 10 ; docker compose logs --follow action ) &
+              docker compose up finish
               #bash action.sh
 #              cp -rv $(pwd)/ /home/runner/work/_temp/_github_home/
 #              ( cd /home/runner/work/_temp/_github_home/$(basename $(pwd)); test -e logs || mkdir logs ; bash action.sh 2>&1) || exit 1
