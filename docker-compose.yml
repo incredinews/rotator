@@ -1,0 +1,19 @@
+version: "3"
+
+networks:
+  loki:
+
+volumes:
+  log-data:
+  driver: local
+services:
+#  flog-log:
+#  image: mingrammer/flog
+#  command: "-f json -t log -l -w -d 5s -o /etc/data/data.log"
+#  volumes:
+#    - app/logs:/logs
+  fluent-bit:
+  image: fluent/fluent-bit
+  volumes:
+    - ./fluent.conf:/fluent-bit/etc/fluent-bit.conf:ro
+    - app/logs:/etc/data

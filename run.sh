@@ -92,24 +92,31 @@ echo 1 >/tmp/counter
  [[ -z "$ADDON_FEEDS" ]] || echo "$ADDON_FEEDS" 
  
   )|while read url;do 
-  echo "#"$(cat /tmp/counter)
+  echo 
+  echo "...#"$(cat /tmp/counter)
   echo $(($(cat /tmp/counter)+1)) > /tmp/counter
   
 
 
  
     cd ${STARTDIR}/index/
-    basedurl=$(echo -n "$url"|base64 -w 0|sed 's/=/_/g');echo ;
-    echo -n PROCESSING "$url" as $basedurl;
+    basedurl=$(echo -n "$url"|base64 -w 0|sed 's/=/_/g');
+    echo ;
+   
     year=$(date -u +%Y);
+         
+        test -e "${year}_${basedurl}" || { echo ":NO target dir:" ; } ;
         test -e "${year}_${basedurl}" && { 
            #verify a readable json
            id=$(cat "${year}_${basedurl}"|jq  -r .id)
            [[ "$id" = "null" ]] && { echo ":ID NOT READABLE:" ; } ;
            [[ "$id" = "null" ]] || { 
+            test -e "${STARTDIR}/store_$id" && echo "|FILES COUNT:"$(find ${STARTDIR}/store_$id -type f |wc -l )"|"
              test -e "${STARTDIR}/store_$id"  &&  test -e    "${STARTDIR}/store_$id/fetch.status" && cat  "${STARTDIR}/store_$id/fetch.status"  |sed 's/http.\+//g' |sed 's/^/BFORE:/g'
 
             (
+            echo
+            echo -n PROCESSING "$url" as $basedurl;
             test -e "${STARTDIR}/store_$id"  && (
                 test -e "${STARTDIR}/store_$id/fetch.status"  && gettime=$(date -d  $(cat "${STARTDIR}/store_$id/fetch.status" |cut -d'"' -f2) +%s);
                 
@@ -120,6 +127,7 @@ echo 1 >/tmp/counter
                 timeout 15 git clone https://gist.github.com/${id}.git "${STARTDIR}/store_$id"  &>/dev/null || git clone   https://$GIT_USER:$GIST_TOKEN@gist.github.com/$id  "${STARTDIR}/store_$id"  2>&1 ) 
 
             test -e "${STARTDIR}/store_$id" && {  
+
               cd  "${STARTDIR}/store_$id"
               #pwd
               update=yes
