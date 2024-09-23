@@ -154,10 +154,10 @@ echo 1 >/tmp/counter
               branchname=$(echo "$basedurl"|sed 's/_/=/g'|base64 -d|cut -d"/" -f3|sed 's/\./-/g')
               test -e ${PARDIR}/pages/${branchname} || mkdir ${PARDIR}/pages/${branchname}
               
-              (find -type f -name "*.json"; find -type f -name "*.xml" ) | while read outfile;do
+              test -e "${STARTDIR}/store_$id"  && (cd "${STARTDIR}/store_$id" && find -type f -name "*.json"; find -type f -name "*.xml" ) | while read outfile;do
                  outname=$(echo "${outfile}" |sed 's/^/'${basedurl}'./g')
                  
-                 cp $outfile ${PARDIR}/pages/${branchname}/${outname}
+                 cp "$outfile" ${PARDIR}/pages/${branchname}/${outname}
                  
               done
               grep -q -e "http error: 404 Not Found" fetch.status || (git status --porcelain|wc -l |grep -q 0 || {
@@ -190,7 +190,7 @@ cd ${PARDIR}/pages/
 
 (cd "$sendbranch" && ( find -type f > index.txt ))
 
-which npx &>/dev/null  &&  npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" --branch "$sendbranch" "$sendbranch"
+find "${PARDIR}/pages/$sendbranch" -type f|wc -l |grep -q ^1$ || ( which npx &>/dev/null  &&  npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" --branch "$sendbranch" "$sendbranch")
 done
 )
 (
