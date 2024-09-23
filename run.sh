@@ -86,9 +86,18 @@ done
         echo -n ; } ; )
    ) &>> ${PARDIR}/logs/main.log
 
+echo 1 >/tmp/counter
+ ( echo "$urllist"
+ test -e ADDON_FEEDS && cat ADDON_FEEDS |grep -v "^#"|grep -e ftp:// -e http:// -e https://
+ [[ -z "$ADDON_FEEDS" ]] || echo "$ADDON_FEEDS" 
  
- echo "$urllist"|while read url;do 
- (
+  )|while read url;do 
+  echo "#"$(cat /tmp/counter)
+  echo $(($(cat /tmp/counter)+1)) > /tmp/counter
+  
+
+
+ 
     cd ${STARTDIR}/index/
     basedurl=$(echo -n "$url"|base64 -w 0|sed 's/=/_/g');echo ; echo -n PROCESSING "$url" as $basedurl;
     year=$(date -u +%Y);
@@ -97,7 +106,9 @@ done
            id=$(cat "${year}_${basedurl}"|jq  -r .id)
            [[ "$id" = "null" ]] && { echo ":ID NOT READABLE:" ; } ;
            [[ "$id" = "null" ]] || { 
-              
+             test -e "${STARTDIR}/store_$id"  &&  test -e    "${STARTDIR}/store_$id/fetch.status" && cat  "${STARTDIR}/store_$id/fetch.status"  |sed 's/http.\+//g' |sed 's/^/BFORE:/g'
+
+            (
             test -e "${STARTDIR}/store_$id"  && (
                 test -e "${STARTDIR}/store_$id/fetch.status"  && gettime=$(date -d  $(cat "${STARTDIR}/store_$id/fetch.status" |cut -d'"' -f2) +%s);
                 
@@ -106,7 +117,6 @@ done
 
             test -e "${STARTDIR}/store_$id"  || (            echo "loading $id"  ;
                 timeout 15 git clone https://gist.github.com/${id}.git "${STARTDIR}/store_$id"  &>/dev/null || git clone   https://$GIT_USER:$GIST_TOKEN@gist.github.com/$id  "${STARTDIR}/store_$id"  2>&1 ) 
-            test -e "${STARTDIR}/store_$id"  &&  test -e    "${STARTDIR}/store_$id/fetch.status" && cat  "${STARTDIR}/store_$id/fetch.status"  |sed 's/http.\+//g' |sed 's/^/BFORE:/g'
 
             test -e "${STARTDIR}/store_$id" && {  
               cd  "${STARTDIR}/store_$id"
@@ -160,11 +170,12 @@ done
                   git add -A ;git commit -m "updates $(date -u)";git push  &
                   echo -n ; } ;
               )
+              ) &>>${PARDIR}/logs/$basedurl.log & 
+              test -e "${STARTDIR}/store_$id"  &&  test -e    "${STARTDIR}/store_$id/fetch.status" && cat  "${STARTDIR}/store_$id/fetch.status"  |sed 's/http.\+//g' |sed 's/^/AFTER:/g'
+
               echo -n ; } ;
               
         }
-        ) &>>${PARDIR}/logs/$basedurl.log & 
-        test -e "${STARTDIR}/store_$id"  &&  test -e    "${STARTDIR}/store_$id/fetch.status" && cat  "${STARTDIR}/store_$id/fetch.status"  |sed 's/http.\+//g' |sed 's/^/AFTER:/g'
         sleep 3
 #grep msg=  ${PARDIR}/logs/*.log ${PARDIR}/logs/.log|sed 's/http.\+//g' |sort -u
 
