@@ -99,7 +99,8 @@ echo 1 >/tmp/counter
 
  
     cd ${STARTDIR}/index/
-    basedurl=$(echo -n "$url"|base64 -w 0|sed 's/=/_/g');echo ; echo -n PROCESSING "$url" as $basedurl;
+    basedurl=$(echo -n "$url"|base64 -w 0|sed 's/=/_/g');echo ;
+    echo -n PROCESSING "$url" as $basedurl;
     year=$(date -u +%Y);
         test -e "${year}_${basedurl}" && { 
            #verify a readable json
@@ -157,7 +158,7 @@ echo 1 >/tmp/counter
               test -e "${STARTDIR}/store_$id"  && (cd "${STARTDIR}/store_$id" && ( cd "${STARTDIR}/store_$id";find -type f -name "*.json"; find -type f -name "*.xml" )) | while read outfile;do
                  outname=$(echo "${outfile}" |sed 's/^/'${basedurl}'./g')
                  
-                 cp "$outfile" ${PARDIR}/pages/${branchname}/${outname}
+                 cp "${STARTDIR}/store_$id/$outfile" "${PARDIR}/pages/${branchname}/${outname}"
                  
               done
               grep -q -e "http error: 404 Not Found" fetch.status || (git status --porcelain|wc -l |grep -q 0 || {
