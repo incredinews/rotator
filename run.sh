@@ -33,7 +33,7 @@ test -e ${PARDIR}/logs/curl.log && (echo > ${PARDIR}/logs/curl.log)
  
  git remote -v 
  #echo "MOUNTING RW"
- git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/$GIST_ID
+ git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/${GIST_ID}".git"
  git status
 year=$(date -u +%Y);
 #test -e "$year"|| mkdir "$year";
@@ -88,7 +88,7 @@ wait
  
     git status --porcelain|wc -l |grep -q 0 || {
     echo "SAVING INDEX"
-    git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/${GIST_ID}".gitt"
+    git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/${GIST_ID}".git"
     git status
                 git add -A ;git commit -m "updates $(date -u)";git push 
         echo -n ; } ; )
@@ -129,11 +129,11 @@ echo 1 >/tmp/counter
             test -e "${STARTDIR}/store_$id"  && (
                 test -e "${STARTDIR}/store_$id/fetch.status"  && gettime=$(date -d  $(cat "${STARTDIR}/store_$id/fetch.status" |cut -d'"' -f2) +%s);
                 
-               [[ $(($now-$gettime)) -le 1234 ]] || (  echo "pulling $id";cd  "${STARTDIR}/store_$id" ; git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/$id;git pull &>/dev/null )
+               [[ $(($now-$gettime)) -le 1234 ]] || (  echo "pulling $id";cd  "${STARTDIR}/store_$id" ; git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/${id}".git";git pull &>/dev/null )
             ) 
 
             test -e "${STARTDIR}/store_$id"  || (            echo "loading $id"  ;
-                timeout 15 git clone https://gist.github.com/${id}.git "${STARTDIR}/store_$id"  &>/dev/null || git clone   https://$GIT_USER:$GIST_TOKEN@gist.github.com/$id  "${STARTDIR}/store_$id"  2>&1 ) 
+                timeout 15 git clone https://gist.github.com/${id}.git "${STARTDIR}/store_$id"  &>/dev/null || git clone  https://$GIT_USER:$GIST_TOKEN@gist.github.com/${id}".git"  "${STARTDIR}/store_$id"  2>&1 ) 
 
             test -e "${STARTDIR}/store_$id" && {  
 
@@ -173,7 +173,7 @@ echo 1 >/tmp/counter
               test -e ${PARDIR}/pages/${branchname} || mkdir ${PARDIR}/pages/${branchname}
               
               test -e "${STARTDIR}/store_$id"  && (cd "${STARTDIR}/store_$id" && ( cd "${STARTDIR}/store_$id";find -type f -name "*.json"; find -type f -name "*.xml" )) | while read outfile;do
-                 outname=$(echo "${outfile}" |sed 's/^/'${basedurl}'./g')
+                 outname=$(echo "${outfile}" |sed 's/^/'${basedurl}'/g')
                  
                  cp "${STARTDIR}/store_$id/$outfile" "${PARDIR}/pages/${branchname}/${outname}"
                  
