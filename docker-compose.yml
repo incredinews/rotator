@@ -25,11 +25,9 @@ services:
     depends_on:
       - action
     volumes:
-      - log-data:/repo/app/logs
       - cache-data:/extcache
       - /var/run/docker.sock:/var/run/docker.sock
-      
-    command: /bin/bash -c " cd /repo && bash action.sh"
+    command: /bin/bash -c "sleep 30; while (docker ps -a |grep action|grep unning );do echo "still running" &>2;done;sleep 10;cd /app/cache && cd /app && tar cvz cache/"
   action:
     #image:  ghcr.io/incredinews/rotator:squashed
     depends_on:
