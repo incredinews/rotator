@@ -197,7 +197,7 @@ done
 cd ${PARDIR}/pages/
 [[ "$cansend" = "yes" ]] && test -e ${PARDIR}/pages/ &&  (
 mkdir main
-( find -type -f -name "*.json" ;find -type -f -name "*.xml" ) > main/index.txt
+( find -type f -name "*.json" ;find -type f -name "*.xml" ) > main/index.txt
 cat main/index.txt | jq -Rn '{date: "'$(date -u +%s)'", lines: [inputs]}' > main/index.json
 which npx &>/dev/null  &&  npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" main
 )
