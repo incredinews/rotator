@@ -212,10 +212,19 @@ cansend=yes
 [[ -z "$CF_PAGESPROJECT" ]] && cansend=no
 (
 cd ${PARDIR}/pages/
+echo 1 >/tmp/counter
 [[ "$cansend" = "yes" ]] && test -e ${PARDIR}/pages/ &&  for sendbranch in $(cd ${PARDIR}/pages/;ls -d1 *);do
 
+
+ 
+  echo 
+  echo "PAGE...#"$(cat /tmp/counter)
+  echo $(($(cat /tmp/counter)+1)) > /tmp/counter
+  
+(
 (cd "$sendbranch" && ( find -type f > index.txt ))
-find "${PARDIR}/pages/$sendbranch" -type f|wc -l |grep -q ^1$ || ( which npx &>/dev/null  &&  (npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" --branch "$sendbranch" "$sendbranch" &>>${PARDIR}/logs/pages.log)) & sleep 10
+find "${PARDIR}/pages/$sendbranch" -type f|wc -l |grep -q ^1$ || ( which npx &>/dev/null  &&  (npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" --branch "$sendbranch" "$sendbranch" 2>&1 )) & sleep 10
+) &>>${PARDIR}/logs/pages.log
 done
 wait
 )
@@ -227,8 +236,8 @@ mkdir main
 ( find -type f -name "*.json" ;find -type f -name "*.xml" ) > main/index.txt
 cat main/index.txt | jq -Rn '{date: "'$(date -u +%s)'", lines: [inputs]}' > main/index.json
 
-which npx &>/dev/null  &&  ( npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" main &>>${PARDIR}/logs/pages.log)
-)
+which npx &>/dev/null  &&  ( npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" main 2>&1 )
+) &>>${PARDIR}/logs/pages.log 
 )
 ls -1
 cd ${PARDIR}
