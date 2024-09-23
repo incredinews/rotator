@@ -146,6 +146,10 @@ done
         }
         ) &>>${PARDIR}/logs/$basedurl.log & 
         sleep 5
+grep msg= logs/main.log logs/.log |sort -u
 
-    
 done
+ls -1
+grep msg= logs/main.log logs/.log |sort -u
+
+
