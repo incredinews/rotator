@@ -115,12 +115,14 @@ echo 1 >/tmp/counter
            id=$(cat "${year}_${basedurl}"|jq  -r .id)
            [[ "$id" = "null" ]] && { echo ":ID NOT READABLE:" ; } ;
            [[ "$id" = "null" ]] || { 
-            test -e "${STARTDIR}/store_$id" && echo "|FILES COUNT:"$(find ${STARTDIR}/store_$id -type f |wc -l )"|"
+            test -e "${STARTDIR}/store_$id" && echo "|FILES COUNT:"$(find ${STARTDIR}/store_$id/ -type f|grep -v "\.git" |wc -l )"|"
              test -e "${STARTDIR}/store_$id"  &&  test -e    "${STARTDIR}/store_$id/fetch.status" && cat  "${STARTDIR}/store_$id/fetch.status"  |sed 's/http.\+//g' |sed 's/^/BFORE:/g'
 
             (
             echo
             echo -n PROCESSING "$url" as $basedurl;
+             test -e "${STARTDIR}/store_$id" && echo "|FILES COUNT:"$(find ${STARTDIR}/store_$id/ -type f|grep -v "\.git" |wc -l )"|"
+
             test -e "${STARTDIR}/store_$id"  && (
                 test -e "${STARTDIR}/store_$id/fetch.status"  && gettime=$(date -d  $(cat "${STARTDIR}/store_$id/fetch.status" |cut -d'"' -f2) +%s);
                 
