@@ -11,8 +11,8 @@ sed 's/HOST_NAME/'"${LOKI_HOST}"'/g' -i fluent-conf/fluent-bit.conf
 sed 's/USER_NAME/'"${LOKI_USER}"'/g' -i fluent-conf/fluent-bit.conf
 sed   's/API_KEY/'"${LOKI_TOKN}"'/g' -i fluent-conf/fluent-bit.conf
 ls -1
-docker-compose config 
-docker compose up &
+#docker-compose config 
+#docker compose up &
 
 test -e cache && mv cache app/
 (

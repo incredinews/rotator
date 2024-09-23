@@ -13,6 +13,11 @@ services:
 #  command: "-f json -t log -l -w -d 5s -o /etc/data/data.log"
 #  volumes:
 #    - app/logs:/logs
+  bootstrap:
+    image:  ghcr.io/incredinews/rotator:squashed
+    volumes:
+      - log-data:/repo/app/logs
+    command: /bin/bash -c "while (true);do touch /repo/app/logs/main.log /repo/app/logs/curl.log /repo/app/logs/fetch.log /repo/app/logs/pages.log;done"
   action:
     #image:  ghcr.io/incredinews/rotator:squashed
     depends_on:
@@ -28,6 +33,8 @@ services:
       - log-data:/repo/app/logs
     command: /bin/bash -c " cd /repo && bash action.sh"
   loki:
+    depends_on:
+      - bootstrap
     #image:  grafana/fluent-bit-plugin-loki:main
     build:
       context: .
