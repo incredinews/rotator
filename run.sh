@@ -145,7 +145,8 @@ done
               
         }
         ) &>>${PARDIR}/logs/$basedurl.log & 
-        sleep 5
+        sleep 3
+git status
 grep msg= ${PARDIR}/logs/main.log ${PARDIR}/logs/.log |sort -u
 
 done
