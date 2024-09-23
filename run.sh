@@ -26,6 +26,8 @@ test -e ${PARDIR}/pages && ( echo found pages path )
 test -e ${PARDIR}/logs/fetch.log && (echo > ${PARDIR}/logs/fetch.log)
 test -e ${PARDIR}/logs/main.log && (echo > ${PARDIR}/logs/main.log)
 test -e ${PARDIR}/logs/curl.log && (echo > ${PARDIR}/logs/curl.log)
+test -e ${PARDIR}/logs/pages.log && (echo > ${PARDIR}/logs/pages.log)
+test -e ${PARDIR}/logs/files.log && (echo > ${PARDIR}/logs/files.log)
  #echo git clone https://gist.github.com/${GIST_ID}.git index;
  timeout 10 git clone https://gist.github.com/${GIST_ID}.git index &>/dev/null || git clone  https://$GIT_USER:$GIST_TOKEN@gist.github.com/${GIST_ID} index  2>&1 ;
  
@@ -41,7 +43,7 @@ year=$(date -u +%Y);
 urllist=$(curl -s https://incredinews.github.io/feed-sources/raw/lang/de.rss.json|grep "http"|cut -d'"' -f2)
  
  echo > ${PARDIR}/logs/main.log
- echo > ${PARDIR}/logs/cur.log
+ echo > ${PARDIR}/logs/curl.log
  fullist=$(
  (
  echo "$urllist"
@@ -90,7 +92,7 @@ wait
     echo "SAVING INDEX"
     git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/${GIST_ID}".git"
     git status
-                git add -A ;git commit -m "updates $(date -u)";git push 
+                git add -A ;git commit -m "updates $(date -u)";git push  2>&1|sed 's/^/PUSH_MAIN:/g'
         echo -n ; } ; )
    ) &>> ${PARDIR}/logs/main.log
 
@@ -129,11 +131,11 @@ echo 1 >/tmp/counter
             test -e "${STARTDIR}/store_$id"  && (
                 test -e "${STARTDIR}/store_$id/fetch.status"  && gettime=$(date -d  $(cat "${STARTDIR}/store_$id/fetch.status" |cut -d'"' -f2) +%s);
                 
-               [[ $(($now-$gettime)) -le 1234 ]] || (  echo "pulling $id";cd  "${STARTDIR}/store_$id" ; git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/${id}".git";git pull &>/dev/null )
+               [[ $(($now-$gettime)) -le 1234 ]] || (  echo "pulling $id";cd  "${STARTDIR}/store_$id" ; git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/${id}".git";git pull |sed 's/^/PULL_'"${id}"':/g' )
             ) 
 
             test -e "${STARTDIR}/store_$id"  || (            echo "loading $id"  ;
-                timeout 15 git clone https://gist.github.com/${id}.git "${STARTDIR}/store_$id"  &>/dev/null || git clone  https://$GIT_USER:$GIST_TOKEN@gist.github.com/${id}".git"  "${STARTDIR}/store_$id"  2>&1 ) 
+                timeout 15 git clone https://gist.github.com/${id}.git "${STARTDIR}/store_$id"  &>/dev/null || git clone  https://$GIT_USER:$GIST_TOKEN@gist.github.com/${id}".git"  "${STARTDIR}/store_$id" 2>&1|sed 's/^/CLONE_'"${id}"':/g' ) 
 
             test -e "${STARTDIR}/store_$id" && {  
 
@@ -148,11 +150,11 @@ echo 1 >/tmp/counter
               test -e README.md && mv README.md 0_README.md
               [[ "$update" = "yes" ]] && {
                   echo -n "LOAD:"
-                    test -e current.json && cp current.json last.json
+                    test -e current.json &&  ( cp current.json last.json &>>${PARDIR}/logs/files.log )
                     ##get a json array
                     (echo -n "[";ff  "$url" 2>fetch.status |sed "s/$/,/g")|tr -d '\n'|sed 's/,$/]/g' > current.json 
                     ## restore on failure
-                    grep -q 'msg="fetched ' fetch.status || ( echo using backup; cp last.json current.json )
+                    grep -q 'msg="fetched ' fetch.status || ( echo using backup; cp last.json current.json &>>${PARDIR}/logs/files.log  )
                     test -e ${PARDIR}/logs/curl.log && rm ${PARDIR}/logs/curl.log
                     grep -q 'msg="fetched ' fetch.status && curl -kLv "$url" -o current.xml 2>> ${PARDIR}/logs/curl.log
                 echo -n ; } ;
@@ -175,8 +177,8 @@ echo 1 >/tmp/counter
               test -e "${STARTDIR}/store_$id"  && (cd "${STARTDIR}/store_$id" && ( cd "${STARTDIR}/store_$id";find -type f -name "*.json"; find -type f -name "*.xml" )) | while read outfile;do
                  
                  outname=$(echo "${outfile}" |sed 's/^/'${basedurl}'/g'|sed 's~\./~/~g'|sed 's~/\+~/~g'|sed 's~/~.~g')
-                 echo "copy $outfile | AS |$outname| to | ${PARDIR}/pages/${branchname}/${outname} "
-                 cp "${STARTDIR}/store_$id/$outfile" "${PARDIR}/pages/${branchname}/${outname}"
+                 echo "copy $outfile | AS |$outname| to | ${PARDIR}/pages/${branchname}/${outname} " &>>${PARDIR}/logs/files.log 
+                 cp "${STARTDIR}/store_$id/$outfile" "${PARDIR}/pages/${branchname}/${outname}"      &>>${PARDIR}/logs/files.log 
                  
               done
               grep -q -e "http error: 404 Not Found" fetch.status || (git status --porcelain|wc -l |grep -q 0 || {
