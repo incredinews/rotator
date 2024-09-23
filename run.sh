@@ -154,7 +154,7 @@ echo 1 >/tmp/counter
               branchname=$(echo "$basedurl"|sed 's/_/=/g'|base64 -d|cut -d"/" -f3|sed 's/\./-/g')
               test -e ${PARDIR}/pages/${branchname} || mkdir ${PARDIR}/pages/${branchname}
               
-              test -e "${STARTDIR}/store_$id"  && (cd "${STARTDIR}/store_$id" && find -type f -name "*.json"; find -type f -name "*.xml" ) | while read outfile;do
+              test -e "${STARTDIR}/store_$id"  && (cd "${STARTDIR}/store_$id" && ( cd "${STARTDIR}/store_$id";find -type f -name "*.json"; find -type f -name "*.xml" )) | while read outfile;do
                  outname=$(echo "${outfile}" |sed 's/^/'${basedurl}'./g')
                  
                  cp "$outfile" ${PARDIR}/pages/${branchname}/${outname}
