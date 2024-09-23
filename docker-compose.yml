@@ -3,9 +3,6 @@ version: "3"
 networks:
   loki:
 
-volumes:
-  log-data:
-  driver: local
 services:
 #  flog-log:
 #  image: mingrammer/flog
@@ -13,7 +10,7 @@ services:
 #  volumes:
 #    - app/logs:/logs
   fluent-bit:
-  image: fluent/fluent-bit
-  volumes:
-    - ./fluent.conf:/fluent-bit/etc/fluent-bit.conf:ro
-    - app/logs:/etc/data
+    image: fluent/fluent-bit
+    volumes:
+      - ./fluent.conf:/fluent-bit/etc/fluent-bit.conf:ro
+      - app/logs:/etc/data

@@ -42,11 +42,15 @@ urllist=$(curl -s https://incredinews.github.io/feed-sources/raw/lang/de.rss.jso
  
  echo > ${PARDIR}/logs/main.log
  echo > ${PARDIR}/logs/cur.log
- ( echo "$urllist"
+ fullist=$(
+ (
+ echo "$urllist"
  test -e ADDON_FEEDS && cat ADDON_FEEDS |grep -v "^#"|grep -e ftp:// -e http:// -e https://
  [[ -z "$ADDON_FEEDS" ]] || echo "$ADDON_FEEDS" 
- 
-  ) |sort -u |while read url;do 
+ )|sort -u
+  ) 
+  
+  for url in $(echo "$fullist");do 
     basedurl=$(echo -n "$url"|base64 -w 0|sed 's/=/_/g');
     
     id=""
@@ -67,11 +71,12 @@ urllist=$(curl -s https://incredinews.github.io/feed-sources/raw/lang/de.rss.jso
         id=$(cat "${year}_${basedurl}"|jq  -r .id)
         [[ "$id" = "null" ]] && {   echo "failed to find id ..deleting idx" ; } ;
         [[ "$id" = "null" ]] || {   echo "created at "$id  ; } ;
-        ) &>> ${PARDIR}/logs/main.log
+        ) &>> |${PARDIR}/logs/main.log &
+        sleep 2
     echo -n ; } ;
 done
   
-  
+wait
   
   
  
@@ -89,11 +94,8 @@ done
    ) &>> ${PARDIR}/logs/main.log
 
 echo 1 >/tmp/counter
- ( echo "$urllist"
- test -e ADDON_FEEDS && cat ADDON_FEEDS |grep -v "^#"|grep -e ftp:// -e http:// -e https://
- [[ -z "$ADDON_FEEDS" ]] || echo "$ADDON_FEEDS" 
+  for url in $(echo "$fullist");do 
  
-  )|while read url;do 
   echo 
   echo "...#"$(cat /tmp/counter)
   echo $(($(cat /tmp/counter)+1)) > /tmp/counter
@@ -181,16 +183,18 @@ echo 1 >/tmp/counter
                   git add -A ;git commit -m "updates $(date -u)";git push  &
                   echo -n ; } ;
               )
-              ) &>>${PARDIR}/logs/fetch.log & 
+              ) 2>&1 |sed 's/^/'"$url" : '/g' >> ${PARDIR}/logs/fetch.log & 
               test -e "${STARTDIR}/store_$id"  &&  test -e    "${STARTDIR}/store_$id/fetch.status" && cat  "${STARTDIR}/store_$id/fetch.status"  |sed 's/http.\+//g' |sed 's/^/AFTER:/g'
 
               echo -n ; } ;
               
-        }
-        sleep 3
+        } & 
+        sleep 5
 #grep msg=  ${PARDIR}/logs/*.log |sed 's/http.\+//g' |sort -u
 
 done
+sleep 10;
+wait 
 
 test -e ${PARDIR}/logs/pages.log && (echo >${PARDIR}/logs/pages.log )
 cansend=yes
@@ -202,8 +206,9 @@ cd ${PARDIR}/pages/
 
 (cd "$sendbranch" && ( find -type f > index.txt ))
 
-find "${PARDIR}/pages/$sendbranch" -type f|wc -l |grep -q ^1$ || ( which npx &>/dev/null  &&  (npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" --branch "$sendbranch" "$sendbranch" &>>${PARDIR}/logs/pages.log))
+find "${PARDIR}/pages/$sendbranch" -type f|wc -l |grep -q ^1$ || ( which npx &>/dev/null  &&  (npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" --branch "$sendbranch" "$sendbranch" &>>${PARDIR}/logs/pages.log)) & sleep 10
 done
+wait
 )
 (
 cd ${PARDIR}/pages/
