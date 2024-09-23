@@ -17,7 +17,7 @@ services:
     image:  ghcr.io/incredinews/rotator:squashed
     volumes:
       - log-data:/repo/app/logs
-    command: /bin/bash -c "while (true);do touch /repo/app/logs/main.log /repo/app/logs/curl.log /repo/app/logs/fetch.log /repo/app/logs/pages.log;done"
+    command: /bin/bash -c "cd /repo/app/logs/;while (true);do touch main.log curl.log fetch.log pages.log;sleep 120;done"
   action:
     #image:  ghcr.io/incredinews/rotator:squashed
     depends_on:
