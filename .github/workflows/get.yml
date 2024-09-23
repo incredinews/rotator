@@ -93,7 +93,8 @@ jobs:
               sleep 5
               sleep 10 ; docker compose logs --follow action
               echo "getting cache"
-              docker compose logs --follow --no-color --no-log-prefix finish |tar xvz 
+              #docker compose logs --follow --no-color --no-log-prefix finish |tar xvz 
+              docker-compose -f docker-compose.yml exec finish bash -c 'cd /extcache/cache && cd /extcache && tar cz cache/'|tar xvz
               #fg
               
               #bash action.sh
