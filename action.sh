@@ -6,7 +6,7 @@ sed 's/HOST_NAME/'"${LOKI_HOST}"'/g' -i fluent.conf
 sed 's/USER_NAME/'"${LOKI_USER}"'/g' -i fluent.conf
 sed   's/API_KEY/'"${LOKI_TOKN}"'/g' -i fluent.conf
 
-docker-compose up -d 
+docker compose up -d 
 
 test -e cache && mv cache app/
 (
