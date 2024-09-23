@@ -18,9 +18,13 @@ test -e cache && mv cache app/
 (
 cd ./app
 time bash run.sh
+#for target in logs cache;do 
+#test -e "$target" && mv $target ..
+#done
 for target in logs cache;do 
-test -e "$target" && mv $target ..
+test -e "$target" && mv $target /extcache
 done
 )
+
 time sync
 exit 0
