@@ -71,7 +71,7 @@ urllist=$(curl -s https://incredinews.github.io/feed-sources/raw/lang/de.rss.jso
         id=$(cat "${year}_${basedurl}"|jq  -r .id)
         [[ "$id" = "null" ]] && {   echo "failed to find id ..deleting idx" ; } ;
         [[ "$id" = "null" ]] || {   echo "created at "$id  ; } ;
-        ) &>> |${PARDIR}/logs/main.log &
+        ) 2>&1 |sed 's/^/'"$url" : '/g' >> ${PARDIR}/main/fetch.log & 
         sleep 2
     echo -n ; } ;
 done
