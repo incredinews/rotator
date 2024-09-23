@@ -88,7 +88,7 @@ wait
  
     git status --porcelain|wc -l |grep -q 0 || {
     echo "SAVING INDEX"
-    git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/$GIST_ID
+    git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/${GIST_ID}".gitt"
     git status
                 git add -A ;git commit -m "updates $(date -u)";git push 
         echo -n ; } ; )
@@ -184,7 +184,7 @@ echo 1 >/tmp/counter
                   git config  user.name "User.Name"
                   git config  user.email "gist@github.com" 
  
-                  git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/$id
+                  git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/${id}.git
                   git add -A ;git commit -m "updates $(date -u)";git push  &
                   echo -n ; } ;
               )
