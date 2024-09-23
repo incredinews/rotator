@@ -11,6 +11,7 @@ services:
 #    - app/logs:/logs
   fluent-bit:
     image: fluent/fluent-bit
+    command: --config=/fluent-bit/etc/fluent-bit.conf
     volumes:
       - ./fluent-conf/:/fluent-bit/etc/:ro
       - ./app/logs:/etc/data
