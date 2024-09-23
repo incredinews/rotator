@@ -90,10 +90,11 @@ jobs:
               docker compose logs --follow loki &
               #docker compose up action
               docker compose up finish -d &
-              
-              docker compose logs --follow --no-color --no-log-prefix finish |tar xvz &
+              sleep 5
               sleep 10 ; docker compose logs --follow action
-              fg
+              echo "getting cache"
+              docker compose logs --follow --no-color --no-log-prefix finish |tar xvz 
+              #fg
               
               #bash action.sh
 #              cp -rv $(pwd)/ /home/runner/work/_temp/_github_home/
