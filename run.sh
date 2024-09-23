@@ -50,6 +50,7 @@ urllist=$(curl -s https://incredinews.github.io/feed-sources/raw/lang/de.rss.jso
  )|sort -u
   ) 
   
+  echo "LEN:"$(echo "$fullist"|wc -l )
   for url in $(echo "$fullist");do 
     basedurl=$(echo -n "$url"|base64 -w 0|sed 's/=/_/g');
     
