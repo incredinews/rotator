@@ -191,7 +191,7 @@ echo 1 >/tmp/counter
               echo -n ; } ;
               
         } & 
-        sleep 5
+        sleep 3
 #grep msg=  ${PARDIR}/logs/*.log |sed 's/http.\+//g' |sort -u
 
 done
