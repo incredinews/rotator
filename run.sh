@@ -23,7 +23,9 @@ test -e ${PARDIR}/pages || mkdir  ${PARDIR}/pages
 test -e ${PARDIR}/logs  || mkdir  ${PARDIR}/logs
 test -e ${PARDIR}/logs  && (   echo found log path )
 test -e ${PARDIR}/pages && ( echo found pages path )
- 
+test -e ${PARDIR}/logs/fetch.log && (echo > ${PARDIR}/logs/fetch.log)
+test -e ${PARDIR}/logs/main.log && (echo > ${PARDIR}/logs/main.log)
+test -e ${PARDIR}/logs/curl.log && (echo > ${PARDIR}/logs/curl.log)
  #echo git clone https://gist.github.com/${GIST_ID}.git index;
  timeout 10 git clone https://gist.github.com/${GIST_ID}.git index &>/dev/null || git clone  https://$GIT_USER:$GIST_TOKEN@gist.github.com/${GIST_ID} index  2>&1 ;
  
@@ -144,8 +146,8 @@ echo 1 >/tmp/counter
                     (echo -n "[";ff  "$url" 2>fetch.status |sed "s/$/,/g")|tr -d '\n'|sed 's/,$/]/g' > current.json 
                     ## restore on failure
                     grep -q 'msg="fetched ' fetch.status || ( echo using backup; cp last.json current.json )
-                    test -e ${PARDIR}/logs/${basedurl}.curl.log && rm ${PARDIR}/logs/${basedurl}.curl.log
-                    grep -q 'msg="fetched ' fetch.status && curl -kLv "$url" -o current.xml 2>> ${PARDIR}/logs/${basedurl}.curl.log
+                    test -e ${PARDIR}/logs/curl.log && rm ${PARDIR}/logs/curl.log
+                    grep -q 'msg="fetched ' fetch.status && curl -kLv "$url" -o current.xml 2>> ${PARDIR}/logs/curl.log
                 echo -n ; } ;
 
               [[ "$update" = "no" ]] && {    
@@ -179,17 +181,18 @@ echo 1 >/tmp/counter
                   git add -A ;git commit -m "updates $(date -u)";git push  &
                   echo -n ; } ;
               )
-              ) &>>${PARDIR}/logs/$basedurl.log & 
+              ) &>>${PARDIR}/logs/fetch.log & 
               test -e "${STARTDIR}/store_$id"  &&  test -e    "${STARTDIR}/store_$id/fetch.status" && cat  "${STARTDIR}/store_$id/fetch.status"  |sed 's/http.\+//g' |sed 's/^/AFTER:/g'
 
               echo -n ; } ;
               
         }
         sleep 3
-#grep msg=  ${PARDIR}/logs/*.log ${PARDIR}/logs/.log|sed 's/http.\+//g' |sort -u
+#grep msg=  ${PARDIR}/logs/*.log |sed 's/http.\+//g' |sort -u
 
 done
 
+test -e ${PARDIR}/logs/pages.log && (echo >${PARDIR}/logs/pages.log )
 cansend=yes
 [[ -z "$CLOUDFLARE_API_TOKEN" ]] && cansend=no
 [[ -z "$CF_PAGESPROJECT" ]] && cansend=no
@@ -199,7 +202,7 @@ cd ${PARDIR}/pages/
 
 (cd "$sendbranch" && ( find -type f > index.txt ))
 
-find "${PARDIR}/pages/$sendbranch" -type f|wc -l |grep -q ^1$ || ( which npx &>/dev/null  &&  npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" --branch "$sendbranch" "$sendbranch")
+find "${PARDIR}/pages/$sendbranch" -type f|wc -l |grep -q ^1$ || ( which npx &>/dev/null  &&  (npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" --branch "$sendbranch" "$sendbranch" &>>${PARDIR}/logs/pages.log))
 done
 )
 (
@@ -208,7 +211,8 @@ cd ${PARDIR}/pages/
 mkdir main
 ( find -type f -name "*.json" ;find -type f -name "*.xml" ) > main/index.txt
 cat main/index.txt | jq -Rn '{date: "'$(date -u +%s)'", lines: [inputs]}' > main/index.json
-which npx &>/dev/null  &&  npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" main
+
+which npx &>/dev/null  &&  ( npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" main &>>${PARDIR}/logs/pages.log)
 )
 )
 ls -1
