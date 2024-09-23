@@ -1,5 +1,6 @@
 #/bin/bash 
 which ff || exit 1
+which npx && npm install wrangler
 test -e .env && source .env
 PARDIR=$(pwd)
 test -e cache || mkdir cache 
@@ -14,9 +15,12 @@ test -e ${PARDIR}/logs && ( cd ${PARDIR}/logs || ( rm -rf ${PARDIR}/logs;mkdir $
 test -e ${PARDIR}/logs && (
 echo found log path )
  
+test -e ${PARDIR}/pages && (
+test -e ${PARDIR}/pages && ( cd ${PARDIR}/logs || ( rm -rf ${PARDIR}/pages;mkdir ${PARDIR}/pages) );
+)
 
- STARTDIR=$(pwd)
- echo "cloning "
+test -e ${PARDIR}/logs  && (   echo found log path )
+test -e ${PARDIR}/pages && ( echo found pages path )
  
  #echo git clone https://gist.github.com/${GIST_ID}.git index;
  timeout 10 git clone https://gist.github.com/${GIST_ID}.git index &>/dev/null || git clone  https://$GIT_USER:$GIST_TOKEN@gist.github.com/${GIST_ID} index  2>&1 ;
@@ -118,8 +122,8 @@ done
                     (echo -n "[";ff  "$url" 2>fetch.status |sed "s/$/,/g")|tr -d '\n'|sed 's/,$/]/g' > current.json 
                     ## restore on failure
                     grep -q 'msg="fetched ' fetch.status || ( echo using backup; cp last.json current.json )
-                    test -e ${PARDIR}/logs/${id}.curl.log && rm ${PARDIR}/logs/${id}.curl.log
-                    grep -q 'msg="fetched ' fetch.status && curl -kLv "$url" -o current.xml 2>> ${PARDIR}/logs/${id}.curl.log
+                    test -e ${PARDIR}/logs/${basedurl}.curl.log && rm ${PARDIR}/logs/${basedurl}.curl.log
+                    grep -q 'msg="fetched ' fetch.status && curl -kLv "$url" -o current.xml 2>> ${PARDIR}/logs/${basedurl}.curl.log
                 echo -n ; } ;
 
               [[ "$update" = "no" ]] && {    
@@ -134,7 +138,15 @@ done
               test -e last.json && rm last.json
               (cat current.json |jq .>/dev/null) ||python3 ${PARDIR}/process-ff-item.py 2>&1 
             echo -n ; } ;
-                    
+              branchname=$(echo "$id"|sed 's/_/=/g'|base64 -d|cut -d"/" -f3|sed 's/\./-/g')
+              test -e ${PARDIR}/pages/${branchname} || mkdir ${PARDIR}/pages/${branchname}
+              
+              (find -type f -name "*.json"; find -type f -name "*.xml" ) | while read outfile;do
+                 outname=$(echo "${outfile}" |sed 's/^/'${basedurl}'./g')
+                 
+                 cp $outfile ${PARDIR}/pages/${branchname}/${outname}
+                 
+              done
               grep -q -e "http error: 404 Not Found" fetch.status || (git status --porcelain|wc -l |grep -q 0 || {
                   echo "pushing "$(git remote -v |head -n 1)
                   git status 2>&1|grep -e modified -e ndert -e json
@@ -153,6 +165,28 @@ done
 grep msg=  ${PARDIR}/logs/*.log ${PARDIR}/logs/.log |sort -u
 
 done
+
+cansend=yes
+[[ -z "$CLOUDFLARE_API_TOKEN" ]] && cansend=no
+[[ -z "$CF_PAGESPROJECT" ]] && cansend=no
+(
+cd ${PARDIR}/pages/
+[[ "$cansend" = "yes" ]] && for sendbranch in $(cd ${PARDIR}/pages/;ls -d1 *);do
+
+(cd "$sendbranch" && ( find -type f > index.txt ))
+
+which npx &>/dev/null  &&  npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" --branch "$sendbranch" "$sendbranch"
+done
+)
+(
+cd ${PARDIR}/pages/
+[[ "$cansend" = "yes" ]] && (
+mkdir main
+( find -type -f -name "*.json" ;find -type -f -name "*.xml" ) > main/index.txt
+cat main/index.txt | jq -Rn '{date: "'$(date -u +%s)'", lines: [inputs]}' > main/index.json
+which npx &>/dev/null  &&  npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" main
+)
+)
 ls -1
 grep msg= logs/main.log logs/.log |sort -u
 cd ${PARDIR}
