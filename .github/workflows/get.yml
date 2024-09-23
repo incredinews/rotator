@@ -85,11 +85,12 @@ jobs:
               sed 's/USER_NAME/'"${LOKI_USER}"'/g' -i fluent-conf/fluent-bit.conf
               sed   's/API_KEY/'"${LOKI_TOKN}"'/g' -i fluent-conf/fluent-bit.conf
               #docker compose up
-              docker compose up -d loki
+              docker compose up -d loki 
               docker compose logs --follow loki &
               #docker compose up action
               (sleep 10 ; docker compose logs --follow action ) &
-              docker compose up finish |tar xvz
+              docker compose up finish & 
+              docker compose logs --follow --no-color --no-log-prefix finish |tar xvz
               #bash action.sh
 #              cp -rv $(pwd)/ /home/runner/work/_temp/_github_home/
 #              ( cd /home/runner/work/_temp/_github_home/$(basename $(pwd)); test -e logs || mkdir logs ; bash action.sh 2>&1) || exit 1

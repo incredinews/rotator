@@ -174,7 +174,7 @@ echo 1 >/tmp/counter
               
               test -e "${STARTDIR}/store_$id"  && (cd "${STARTDIR}/store_$id" && ( cd "${STARTDIR}/store_$id";find -type f -name "*.json"; find -type f -name "*.xml" )) | while read outfile;do
                  
-                 outname=$(echo "${outfile}" |sed 's/^/'${basedurl}'/g'|sed 's~\./~/~g'|sed 's~/~_~g')
+                 outname=$(echo "${outfile}" |sed 's/^/'${basedurl}'/g'|sed 's~\./~/~g'|sed 's~/\+~/~g'|sed 's~/~.~g')
                  echo "copy $outfile | AS |$outname| to | ${PARDIR}/pages/${branchname}/${outname} "
                  cp "${STARTDIR}/store_$id/$outfile" "${PARDIR}/pages/${branchname}/${outname}"
                  
