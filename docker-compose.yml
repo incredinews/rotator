@@ -36,7 +36,7 @@ services:
     networks:
       - loki
     volumes:
-      - log-data:logs
+      - log-data:/logs
 #    volumes:
 #      - ./fluent-conf/:/fluent-etc/:ro
 #      - ./fluent-conf/:/fluent-bit/etc/:ro
