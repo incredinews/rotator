@@ -51,7 +51,7 @@ jobs:
 #          time: '10s'
       - name: WHOAMI
         run: bash -c "id -u;id -un"
-#      - name: WAITFORBUILD
+      - name: WAITFORBUILD
         run: bash -c 'grep "image:" docker-compose.yml |grep -v "#" |while read docker img ;do docker  pull $img  & done ;sleep 17 ;(docker image ls | grep incredinews|grep rotator|grep squashedkinto) || (echo "missing images";docker image ls ;sleep 240 )'|| true
       - name: Restore cached Primes
         id: cache-primes-restore
