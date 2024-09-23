@@ -162,7 +162,7 @@ done
         }
         ) &>>${PARDIR}/logs/$basedurl.log & 
         sleep 3
-grep msg=  ${PARDIR}/logs/*.log ${PARDIR}/logs/.log |sort -u
+grep msg=  ${PARDIR}/logs/*.log ${PARDIR}/logs/.log|sed 's/http.\+//g' |sort -u
 
 done
 
@@ -188,8 +188,8 @@ which npx &>/dev/null  &&  npx wrangler pages deploy --project-name "$CF_PAGESPR
 )
 )
 ls -1
-grep msg= logs/main.log logs/.log |sort -u
 cd ${PARDIR}
 pwd
-test -e logs && echo logs there
-
+grep msg= logs/main.log logs/.log |sort -u
+test -e logs && (echo logs there;du -m -s logs)
+test -e pages && (echo logs here)
