@@ -85,7 +85,7 @@ jobs:
               sed 's/USER_NAME/'"${LOKI_USER}"'/g' -i fluent-conf/fluent-bit.conf
               sed   's/API_KEY/'"${LOKI_TOKN}"'/g' -i fluent-conf/fluent-bit.conf
               #docker compose up
-              docker compose up loki
+              docker compose up -d loki
               docker compose logs --follow loki &
               docker compose up action
               #bash action.sh
