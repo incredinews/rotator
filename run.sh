@@ -1,78 +1,151 @@
 #/bin/bash 
 which ff || exit 1
+test -e .env && source .env
+PARDIR=$(pwd)
+test -e cache || mkdir cache 
+test -e logs || mkdir logs
+cd cache || exit 1
+STARTDIR=$(pwd)
+echo "cloning "
 
-git config --global user.name "User.Name"
-git config --global user.email "gist@github.com" 
 
  
+
  STARTDIR=$(pwd)
  echo "cloning "
  
- echo git clone https://gist.github.com/${GIST_ID}.git index;
- timeout 10 git clone https://gist.github.com/${GIST_ID}.git index || git clone  https://$GIT_USER:$GIST_TOKEN@gist.github.com/$GIST_ID index ;
+ #echo git clone https://gist.github.com/${GIST_ID}.git index;
+ timeout 10 git clone https://gist.github.com/${GIST_ID}.git index &>/dev/null || git clone  https://$GIT_USER:$GIST_TOKEN@gist.github.com/${GIST_ID} index  2>&1 ;
  
  cd index || exit 1
  
  git remote -v 
  #echo "MOUNTING RW"
- #git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/$GIST_ID
+ git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/$GIST_ID
  git status
 year=$(date -u +%Y);
 #test -e "$year"|| mkdir "$year";
 
 urllist=$(curl -s https://incredinews.github.io/feed-sources/raw/lang/de.rss.json|grep "http"|cut -d'"' -f2)
- echo "$urllist"|while read url;do 
+ 
+ echo > ${PARDIR}/logs/main.log
+ echo > ${PARDIR}/logs/cur.log
+ ( echo "$urllist"
+ test -e ADDON_FEEDS && cat ADDON_FEEDS |grep -v "^#"|grep -e ftp:// -e http:// -e https://
+ [[ -z "$ADDON_FEEDS" ]] || echo "$ADDON_FEEDS" 
+ 
+  ) |sort -u |while read url;do 
     basedurl=$(echo -n "$url"|base64 -w 0|sed 's/=/_/g');
+    
     id=""
-    test -e "${year}_${basedurl}" && { 
+    test -e "${STARTDIR}/index/${year}_${basedurl}" && { 
+        (
         echo found file for "$url" as $basedurl;
         id=$(cat "${year}_${basedurl}"|jq  -r .id)
-        [[ "$id" = "null" ]] && {   echo "failed to find id ..deleting idx" ; rm "${year}_${basedurl}" ; } ;
+        
+        [[ "$id" = "null" ]] && {   echo "failed to find id ..deleting idx" ;grep -q "$GIT_USER" "${year}_${basedurl}" && echo "sems like authetication problems"; cat ${year}_${basedurl} ; rm "${year}_${basedurl}" ; } ;
         [[ "$id" = "null" ]] || {   echo "found at "$id  ; } ;
+        ) &>> ${PARDIR}/logs/main.log
+
         }
-    test -e "${year}_${basedurl}" || {
+    test -e "${STARTDIR}/index/${year}_${basedurl}" || {
+        (
         echo "missing SOURCE ${year}_${basedurl} .. creating store"
         curl -H "Authorization: Bearer ${GIST_TOKEN}" -X POST -o "${year}_${basedurl}" -d '{"public":"false","description":"json_feed:'"${basedurl}"'@'"$(date  -u +%s)"'","files":{"README.md":{"content":" feed_store for '"$url"'"}}}' https://api.github.com/gists 
         id=$(cat "${year}_${basedurl}"|jq  -r .id)
         [[ "$id" = "null" ]] && {   echo "failed to find id ..deleting idx" ; } ;
         [[ "$id" = "null" ]] || {   echo "created at "$id  ; } ;
+        ) &>> ${PARDIR}/logs/main.log
     echo -n ; } ;
 done
+  
+  
+  
+  
  
  ( cd ${STARTDIR}/index/ && (
+    git config  user.name "User.Name"
+    git config  user.email "gist@github.com" 
+
+ 
     git status --porcelain|wc -l |grep -q 0 || {
     echo "SAVING INDEX"
     git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/$GIST_ID
     git status
                 git add -A ;git commit -m "updates $(date -u)";git push 
         echo -n ; } ; )
- )
+   ) &>> ${PARDIR}/logs/main.log
+
+ 
  echo "$urllist"|while read url;do 
+ (
     cd ${STARTDIR}/index/
-    basedurl=$(echo -n "$url"|base64 -w 0|sed 's/=/_/g');echo PROCESSING "$url" as $basedurl;year=$(date -u +%Y);
+    basedurl=$(echo -n "$url"|base64 -w 0|sed 's/=/_/g');echo ; echo -n PROCESSING "$url" as $basedurl;
+    year=$(date -u +%Y);
         test -e "${year}_${basedurl}" && { 
+        #verify a readable json
         id=$(cat "${year}_${basedurl}"|jq  -r .id)
-        [[ "$id" = "null" ]] || {   
-            test -e "${STARTDIR}/store_$id"  && (echo "pulling $id";cd  "${STARTDIR}/store_$id" ;git pull )
+        [[ "$id" = "null" ]] && { echo ":ID NOT READABLE:" ; } ;
+        [[ "$id" = "null" ]] || { 
+              
+            test -e "${STARTDIR}/store_$id"  && (
+                test -e "${STARTDIR}/store_$id/fetch.status"  && gettime=$(date -d  $(cat "${STARTDIR}/store_$id/fetch.status" |cut -d'"' -f2) +%s);
+                
+               [[ $(($now-$gettime)) -le 1234 ]] || (  echo "pulling $id";cd  "${STARTDIR}/store_$id" ; git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/$id;git pull &>/dev/null )
+            ) 
 
             test -e "${STARTDIR}/store_$id"  || (            echo "loading $id"  ;
-                timeout 15 git clone https://gist.github.com/${id}.git "${STARTDIR}/store_$id" || git clone   https://$GIT_USER:$GIST_TOKEN@gist.github.com/$id  "${STARTDIR}/store_$id" )
+                timeout 15 git clone https://gist.github.com/${id}.git "${STARTDIR}/store_$id"  &>/dev/null || git clone   https://$GIT_USER:$GIST_TOKEN@gist.github.com/$id  "${STARTDIR}/store_$id"  2>&1 ) 
             
-            test -e "${STARTDIR}/store_$id" && {  cd  "${STARTDIR}/store_$id"
-            pwd
-            test -e README.md && mv README.md 0_README.md
-            (echo -n "[";ff  "$url" 2>fetch.status |sed "s/$/,/g")|tr -d '\n'|sed 's/,$/]/g' > current.json 
-            cat fetch.status
-            python3 ${STARTDIR}/process-ff-item.py 2>&1 
-                  echo -n ;} ;
-                  
-            git status --porcelain|wc -l |grep -q 0 || {
-                echo "pushing "$(git remote -v |head -n 1)
-                git status 2>&1|grep -e modified -e ndert -e json
-                git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/$id
-                git add -A ;git commit -m "updates $(date -u)";git push 
+            test -e "${STARTDIR}/store_$id" && {  
+              cd  "${STARTDIR}/store_$id"
+              #pwd
+              update=yes
+              test -e fetch.status && gettime=$(date -d  $(cat fetch.status |cut -d'"' -f2) +%s);
+              now=$(date +%s) ; 
+              [[ $(($now-$gettime)) -le 1234 ]] && update=no
+              test -e fetch.status || update=yes
+              ## debounce above around 20 min, fetch always if no status
+              test -e README.md && mv README.md 0_README.md
+              [[ "$update" = "yes" ]] && {
+                  echo -n "LOAD:"
+                    test -e current.json && cp current.json last.json
+                    ##get a json array
+                    (echo -n "[";ff  "$url" 2>fetch.status |sed "s/$/,/g")|tr -d '\n'|sed 's/,$/]/g' > current.json 
+                    ## restore on failure
+                    grep -q 'msg="fetched ' fetch.status || ( echo using backup; cp last.json current.json )
+                    test -e ${PARDIR}/logs/${id}.curl.log && rm ${PARDIR}/logs/${id}.curl.log
+                    grep -q 'msg="fetched ' fetch.status && curl -kLv "$url" -o current.xml 2>> ${PARDIR}/logs/${id}.curl.log
                 echo -n ; } ;
-            echo -n ; } ;
+
+              [[ "$update" = "no" ]] && {    
+                    echo -n "WAIT:"
+
+                echo -n ; } ;
+
+             
+              
+              echo $( test -e fetch.status && echo "("$(($now-$gettime))"s ago )" ; )" "
+              test -e tech.status && cat fetch.status
+              test -e last.json && rm last.json
+              (cat current.json |jq .>/dev/null) ||python3 ${PARDIR}/process-ff-item.py 2>&1 
+                    echo -n ;} ;
+                    
+              grep -q -e "http error: 404 Not Found" fetch.status || (git status --porcelain|wc -l |grep -q 0 || {
+                  echo "pushing "$(git remote -v |head -n 1)
+                  git status 2>&1|grep -e modified -e ndert -e json
+                  git config  user.name "User.Name"
+                  git config  user.email "gist@github.com" 
+ 
+                  git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/$id
+                  git add -A ;git commit -m "updates $(date -u)";git push  &
+                  echo -n ; } ;
+              )
+              echo -n ; } ;
+              
         }
+        ) &>>${PARDIR}/logs/$basedurl.log & 
+        sleep 5
+
     
 done

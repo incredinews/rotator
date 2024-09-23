@@ -1,0 +1,10 @@
+cache*
+cache/
+.cache
+store_*
+index/*
+index
+logs/*
+logs
+ADDON_FEEDS
+.env
