@@ -64,7 +64,6 @@ jobs:
 
       - name: Run service 
         run: |
-        run: |
               pwd|tee  ${{ runner.temp }}/STARTDIR
               cp -rv $(pwd)/ ${{ runner.temp }}/
               ( cd ${{ runner.temp }}/$(basename $(pwd)); test -e logs || mkdir logs ; bash action.sh 2>&1) || exit 1
