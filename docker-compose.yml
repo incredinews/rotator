@@ -11,7 +11,8 @@ services:
 #    - app/logs:/logs
   fluent-bit:
     image:  grafana/fluent-bit-plugin-loki:main
-    command: /fluent/bin/fluent-bit --config=/fluent-etc/fluent-bit.conf
+#CMD ["/fluent-bit/bin/fluent-bit", "-e","/fluent-bit/bin/out_grafana_loki.so", "-c", "/fluent-bit/etc/fluent-bit.conf"]
     volumes:
       - ./fluent-conf/:/fluent-etc/:ro
+      - ./fluent-conf/:/fluent-bit/etc/:ro
       - ./app/logs:/logs
