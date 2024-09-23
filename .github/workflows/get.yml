@@ -65,10 +65,10 @@ jobs:
       - name: Run service 
         run: |
               pwd
-              cp -rv $(pwd)/ ${{ runner.temp }}/
-              ( cd ${{ runner.temp }}/$(basename $(pwd)); test -e logs || mkdir logs ; bash action.sh 2>&1) || exit 1
-              (test -e ${{ runner.temp }}/$(basename $(pwd))/logs && mv ${{ runner.temp }}/$(basename $(pwd))/logs . )
-              (test -e ${{ runner.temp }}/$(basename $(pwd))/cache && mv ${{ runner.temp }}/$(basename $(pwd))/cache . )
+              cp -rv $(pwd)/ /home/runner/work/_temp/_github_home/
+              ( cd /home/runner/work/_temp/_github_home/$(basename $(pwd)); test -e logs || mkdir logs ; bash action.sh 2>&1) || exit 1
+              (test -e /home/runner/work/_temp/_github_home/$(basename $(pwd))/logs && mv /home/runner/work/_temp/_github_home/$(basename $(pwd))/logs . )
+              (test -e /home/runner/work/_temp/_github_home/$(basename $(pwd))/cache && mv /home/runner/work/_temp/_github_home/$(basename $(pwd))/cache . )
               echo done
         #run: echo disabled
       - name: Save Primes

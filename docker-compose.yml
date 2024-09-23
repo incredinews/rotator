@@ -13,7 +13,7 @@ services:
     image:  grafana/fluent-bit-plugin-loki:main
 #CMD ["/fluent-bit/bin/fluent-bit", "-e","/fluent-bit/bin/out_grafana_loki.so", "-c", "/fluent-bit/etc/fluent-bit.conf"]
     volumes:
-      - ./fluent-conf/:/fluent-etc/:ro
-      - ./fluent-conf/:/fluent-bit/etc/:ro
-      - ./app/logs:/logs
+      - /github/home/fluent-conf/:/fluent-etc/:ro
+      - /github/home/fluent-conf/:/fluent-bit/etc/:ro
+      - /github/home/app/logs:/logs
   #docker run -d -i --name NAME --mount type=bind,src="${{ runner.temp }}/scenarios",target="/data" --entrypoint /bin/bash myImage:$VERSION
