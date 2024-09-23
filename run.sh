@@ -92,7 +92,8 @@ wait
     echo "SAVING INDEX"
     git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/${GIST_ID}".git"
     git status
-                git add -A ;git commit -m "updates $(date -u)";git push  2>&1|sed 's/^/PUSH_MAIN:/g'
+                 ( git add -A 2>&1 ;git commit -m "updates $(date -u)" 2>&1 ;git push 2>&1 ) |sed 's/^/PUSH_MAIN:/g' 
+
         echo -n ; } ; )
    ) &>> ${PARDIR}/logs/main.log
 
@@ -188,7 +189,7 @@ echo 1 >/tmp/counter
                   git config  user.email "gist@github.com" 
  
                   git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/${id}.git
-                  git add -A ;git commit -m "updates $(date -u)";git push  &
+                  ( git add -A 2>&1 ;git commit -m "updates $(date -u)" 2>&1 ;git push 2>&1 ) |sed 's/^/PUSH_'"${id}"':/g' &
                   echo -n ; } ;
               )
                ) 2>&1 |sed 's~^~'"$safeurl"' : ~g'  >> ${PARDIR}/logs/fetch.log & 
@@ -213,11 +214,11 @@ cd ${PARDIR}/pages/
 [[ "$cansend" = "yes" ]] && test -e ${PARDIR}/pages/ &&  for sendbranch in $(cd ${PARDIR}/pages/;ls -d1 *);do
 
 (cd "$sendbranch" && ( find -type f > index.txt ))
-
 find "${PARDIR}/pages/$sendbranch" -type f|wc -l |grep -q ^1$ || ( which npx &>/dev/null  &&  (npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" --branch "$sendbranch" "$sendbranch" &>>${PARDIR}/logs/pages.log)) & sleep 10
 done
 wait
 )
+
 (
 cd ${PARDIR}/pages/
 [[ "$cansend" = "yes" ]] && test -e ${PARDIR}/pages/ &&  (
