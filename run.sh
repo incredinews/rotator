@@ -55,7 +55,8 @@ urllist=$(curl -s https://incredinews.github.io/feed-sources/raw/lang/de.rss.jso
   echo "LEN:"$(echo "$fullist"|wc -l )
   for url in $(echo "$fullist");do 
     basedurl=$(echo -n "$url"|base64 -w 0|sed 's/=/_/g');
-    safeurl=$(echo -n "$url"|sed 's/=/_/g;s/=/"/g;s/=/~/g;s/\//_/g;s/:/_/g')
+    safeurl=$(echo -n "$url"|sed 's/=/_/g;s/=/"/g;s/=/~/g;s/\//_/g;s/:/_/g'|sed 's/https___//g'|sed 's/http___//g')
+
     id=""
     test -e "${STARTDIR}/index/${year}_${basedurl}" && { 
         (
@@ -109,7 +110,7 @@ echo 1 >/tmp/counter
  
     cd ${STARTDIR}/index/
     basedurl=$(echo -n "$url"|base64 -w 0|sed 's/=/_/g');
-    safeurl=$(echo -n "$url"|sed 's/=/_/g;s/=/"/g;s/=/~/g;s/\//_/g;s/:/_/g')
+    safeurl=$(echo -n "$url"|sed 's/=/_/g;s/=/"/g;s/=/~/g;s/\//_/g;s/:/_/g'|sed 's/https___//g'|sed 's/http___//g')
 
     echo ;
    
