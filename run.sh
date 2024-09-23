@@ -71,7 +71,7 @@ urllist=$(curl -s https://incredinews.github.io/feed-sources/raw/lang/de.rss.jso
         id=$(cat "${year}_${basedurl}"|jq  -r .id)
         [[ "$id" = "null" ]] && {   echo "failed to find id ..deleting idx" ; } ;
         [[ "$id" = "null" ]] || {   echo "created at "$id  ; } ;
-        ) 2>&1 |sed 's/^/'"$url" : '/g' >> ${PARDIR}/main/fetch.log & 
+        ) 2>&1 |sed 's~^~'"$url"' : ~ g' >> ${PARDIR}/main.log & 
         sleep 2
     echo -n ; } ;
 done
@@ -183,7 +183,7 @@ echo 1 >/tmp/counter
                   git add -A ;git commit -m "updates $(date -u)";git push  &
                   echo -n ; } ;
               )
-              ) 2>&1 |sed 's/^/'"$url" : '/g' >> ${PARDIR}/logs/fetch.log & 
+               ) 2>&1 |sed 's~^~'"$url"' : ~ g'  >> ${PARDIR}/logs/fetch.log & 
               test -e "${STARTDIR}/store_$id"  &&  test -e    "${STARTDIR}/store_$id/fetch.status" && cat  "${STARTDIR}/store_$id/fetch.status"  |sed 's/http.\+//g' |sed 's/^/AFTER:/g'
 
               echo -n ; } ;
