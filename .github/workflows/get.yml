@@ -52,7 +52,7 @@ jobs:
       - name: WHOAMI
         run: bash -c "id -u;id -un"
       - name: WAITFORBUILD
-        run: bash -c 'grep "image:" docker-compose.yml |grep -v "#" |while read docker img ;do docker  pull $img  & done ;sleep 17 ;(docker image ls | grep incredinews|grep rotator|grep squashedkinto) || (echo "missing images";docker image ls ;sleep 240 )'|| true
+        run: bash -c 'for img in $(grep "image:" docker-compose.yml |grep -v "#" ;cat Dockerfil*|grep FROM|sed "s/FROM//g" ) ;do docker  pull $img  & done ;wait;(docker image ls | grep incredinews|grep rotator|grep squashedkinto) || (echo "missing images";docker image ls ;sleep 240 )'|| true
       - name: Restore cached Primes
         id: cache-primes-restore
         uses: actions/cache/restore@v4
