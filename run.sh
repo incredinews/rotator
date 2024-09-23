@@ -91,10 +91,10 @@ done
     basedurl=$(echo -n "$url"|base64 -w 0|sed 's/=/_/g');echo ; echo -n PROCESSING "$url" as $basedurl;
     year=$(date -u +%Y);
         test -e "${year}_${basedurl}" && { 
-        #verify a readable json
-        id=$(cat "${year}_${basedurl}"|jq  -r .id)
-        [[ "$id" = "null" ]] && { echo ":ID NOT READABLE:" ; } ;
-        [[ "$id" = "null" ]] || { 
+           #verify a readable json
+           id=$(cat "${year}_${basedurl}"|jq  -r .id)
+           [[ "$id" = "null" ]] && { echo ":ID NOT READABLE:" ; } ;
+           [[ "$id" = "null" ]] || { 
               
             test -e "${STARTDIR}/store_$id"  && (
                 test -e "${STARTDIR}/store_$id/fetch.status"  && gettime=$(date -d  $(cat "${STARTDIR}/store_$id/fetch.status" |cut -d'"' -f2) +%s);
@@ -104,7 +104,8 @@ done
 
             test -e "${STARTDIR}/store_$id"  || (            echo "loading $id"  ;
                 timeout 15 git clone https://gist.github.com/${id}.git "${STARTDIR}/store_$id"  &>/dev/null || git clone   https://$GIT_USER:$GIST_TOKEN@gist.github.com/$id  "${STARTDIR}/store_$id"  2>&1 ) 
-            
+            test -e "${STARTDIR}/store_$id"  &&  test -e    "${STARTDIR}/store_$id/fetch.status" && cat  "${STARTDIR}/store_$id/fetch.status"  |sed 's/http.\+//g' |sed 's/^/BFORE:/g'
+
             test -e "${STARTDIR}/store_$id" && {  
               cd  "${STARTDIR}/store_$id"
               #pwd
@@ -138,7 +139,7 @@ done
               test -e last.json && rm last.json
               (cat current.json |jq .>/dev/null) ||python3 ${PARDIR}/process-ff-item.py 2>&1 
             echo -n ; } ;
-              branchname=$(echo "$id"|sed 's/_/=/g'|base64 -d|cut -d"/" -f3|sed 's/\./-/g')
+              branchname=$(echo "$basedurl"|sed 's/_/=/g'|base64 -d|cut -d"/" -f3|sed 's/\./-/g')
               test -e ${PARDIR}/pages/${branchname} || mkdir ${PARDIR}/pages/${branchname}
               
               (find -type f -name "*.json"; find -type f -name "*.xml" ) | while read outfile;do
@@ -161,8 +162,9 @@ done
               
         }
         ) &>>${PARDIR}/logs/$basedurl.log & 
+        test -e "${STARTDIR}/store_$id"  &&  test -e    "${STARTDIR}/store_$id/fetch.status" && cat  "${STARTDIR}/store_$id/fetch.status"  |sed 's/http.\+//g' |sed 's/^/AFTER:/g'
         sleep 3
-grep msg=  ${PARDIR}/logs/*.log ${PARDIR}/logs/.log|sed 's/http.\+//g' |sort -u
+#grep msg=  ${PARDIR}/logs/*.log ${PARDIR}/logs/.log|sed 's/http.\+//g' |sort -u
 
 done
 
@@ -171,7 +173,7 @@ cansend=yes
 [[ -z "$CF_PAGESPROJECT" ]] && cansend=no
 (
 cd ${PARDIR}/pages/
-[[ "$cansend" = "yes" ]] && for sendbranch in $(cd ${PARDIR}/pages/;ls -d1 *);do
+[[ "$cansend" = "yes" ]] && test -e ${PARDIR}/pages/ &&  for sendbranch in $(cd ${PARDIR}/pages/;ls -d1 *);do
 
 (cd "$sendbranch" && ( find -type f > index.txt ))
 
@@ -180,7 +182,7 @@ done
 )
 (
 cd ${PARDIR}/pages/
-[[ "$cansend" = "yes" ]] && (
+[[ "$cansend" = "yes" ]] && test -e ${PARDIR}/pages/ &&  (
 mkdir main
 ( find -type -f -name "*.json" ;find -type -f -name "*.xml" ) > main/index.txt
 cat main/index.txt | jq -Rn '{date: "'$(date -u +%s)'", lines: [inputs]}' > main/index.json
