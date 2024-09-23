@@ -26,7 +26,7 @@ services:
 #      - /repo/app/logs:/logs
     volumes:
       - log-data:/repo/app/logs
-    command /bin/bash -c " cd /repo && bash action.sh"
+    command: /bin/bash -c " cd /repo && bash action.sh"
   loki:
     #image:  grafana/fluent-bit-plugin-loki:main
     build:
