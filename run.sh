@@ -7,8 +7,12 @@ test -e logs || mkdir logs
 cd cache || exit 1
 STARTDIR=$(pwd)
 echo "cloning "
+test -e ${PARDIR}/logs && (
+test -e ${PARDIR}/logs && ( cd ${PARDIR}/logs || ( rm -rf ${PARDIR}/logs;mkdir ${PARDIR}/logs) );
+)
 
-
+test -e ${PARDIR}/logs && (
+echo found log path )
  
 
  STARTDIR=$(pwd)
@@ -129,7 +133,7 @@ done
               test -e tech.status && cat fetch.status
               test -e last.json && rm last.json
               (cat current.json |jq .>/dev/null) ||python3 ${PARDIR}/process-ff-item.py 2>&1 
-                    echo -n ;} ;
+            echo -n ; } ;
                     
               grep -q -e "http error: 404 Not Found" fetch.status || (git status --porcelain|wc -l |grep -q 0 || {
                   echo "pushing "$(git remote -v |head -n 1)
@@ -146,7 +150,6 @@ done
         }
         ) &>>${PARDIR}/logs/$basedurl.log & 
         sleep 3
-git status
 grep msg=  ${PARDIR}/logs/*.log ${PARDIR}/logs/.log |sort -u
 
 done
