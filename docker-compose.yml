@@ -12,5 +12,5 @@ services:
   fluent-bit:
     image: fluent/fluent-bit
     volumes:
-      - ./fluent.conf:/fluent-bit/etc/fluent-bit.conf:ro
+      - ./fluent-conf/:/fluent-bit/etc/:ro
       - ./app/logs:/etc/data
