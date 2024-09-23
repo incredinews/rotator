@@ -133,7 +133,7 @@ echo 1 >/tmp/counter
             test -e "${STARTDIR}/store_$id"  && (
                 test -e "${STARTDIR}/store_$id/fetch.status"  && gettime=$(date -d  $(cat "${STARTDIR}/store_$id/fetch.status" |cut -d'"' -f2) +%s);
                 
-               [[ $(($now-$gettime)) -le 1234 ]] || (  echo "pulling $id";cd  "${STARTDIR}/store_$id" ; git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/${id}".git";git pull |sed 's/^/PULL_'"${id}"':/g' )
+               [[ $(($now-$gettime)) -le 1234 ]] || (  echo "pulling $id";cd  "${STARTDIR}/store_$id" ; git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/${id}".git" ;git pull |sed 's/^/PULL_'"${id}"':/g' )
             ) 
 
             test -e "${STARTDIR}/store_$id"  || (            echo "loading $id"  ;
@@ -190,7 +190,7 @@ echo 1 >/tmp/counter
                   git config  user.email "gist@github.com" 
  
                   git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/${id}.git
-                  ( git add -A 2>&1 ;git commit -m "updates $(date -u)" 2>&1 ;git push 2>&1 ) |sed 's/^/PUSH_'"${id}"':/g' &
+                  ( git remote -v 2>&1;git add -A 2>&1 ;git commit -m "updates $(date -u)" 2>&1 ;git push 2>&1 ) |sed 's/^/PUSH_'"${id}"':/g' &
                   echo -n ; } ;
               )
                ) 2>&1 |sed 's~^~'"$safeurl"' : ~g'  >> ${PARDIR}/logs/fetch.log & 
