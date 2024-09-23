@@ -78,8 +78,11 @@ jobs:
       - name: Run service 
         run: |
               pwd
-              docker compose up
-              #docker compose up action
+              sed 's/HOST_NAME/'"${LOKI_HOST}"'/g' -i fluent-conf/fluent-bit.conf
+              sed 's/USER_NAME/'"${LOKI_USER}"'/g' -i fluent-conf/fluent-bit.conf
+              sed   's/API_KEY/'"${LOKI_TOKN}"'/g' -i fluent-conf/fluent-bit.conf
+              #docker compose up
+              docker compose up action
               #bash action.sh
 #              cp -rv $(pwd)/ /home/runner/work/_temp/_github_home/
 #              ( cd /home/runner/work/_temp/_github_home/$(basename $(pwd)); test -e logs || mkdir logs ; bash action.sh 2>&1) || exit 1
