@@ -64,8 +64,13 @@ jobs:
 
       - name: Run service 
         run: |
-              test -e logs || mkdir logs ;
-              bash action.sh 2>&1
+        run: |
+              pwd|tee  ${{ runner.temp }}/STARTDIR
+              cp -rv $(pwd)/ ${{ runner.temp }}/
+              ( cd ${{ runner.temp }}/$(basename $(pwd)); test -e logs || mkdir logs ; bash action.sh 2>&1) || exit 1
+              (test -e ${{ runner.temp }}/$(basename $(pwd))/logs && mv ${{ runner.temp }}/$(basename $(pwd))/logs . )
+              (test -e ${{ runner.temp }}/$(basename $(pwd))/cache && mv ${{ runner.temp }}/$(basename $(pwd))/cache . )
+              echo done
         #run: echo disabled
       - name: Save Primes
         id: cache-primes-save
@@ -76,11 +81,11 @@ jobs:
             pages
           key: ${{ runner.os }}-cache
       
-      - name: Archive production artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-without-markdown
-          path: |
-            pages
-            logs
-            logs/*
+ #     - name: Archive production artifacts
+ #       uses: actions/upload-artifact@v4
+ #       with:
+ #         name: dist-without-markdown
+ #         path: |
+ #           pages
+ #           logs
+ #           logs/*

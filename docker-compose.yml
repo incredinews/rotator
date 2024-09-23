@@ -16,3 +16,4 @@ services:
       - ./fluent-conf/:/fluent-etc/:ro
       - ./fluent-conf/:/fluent-bit/etc/:ro
       - ./app/logs:/logs
+  #docker run -d -i --name NAME --mount type=bind,src="${{ runner.temp }}/scenarios",target="/data" --entrypoint /bin/bash myImage:$VERSION
