@@ -4,6 +4,9 @@ env:
   GIST_TOKEN: ${{secrets.GIST_TOKEN}}
   GIT_USER: ${{secrets.GIT_USER}}
   GIST_ID:  ${{secrets.GIST_ID }}
+  LOKI_HOST:  ${{secrets.LOKI_HOST }}
+  LOKI_USER:  ${{secrets.LOKI_USER }}
+  LOKI_TOKN:  ${{secrets.LOKI_TOKN }}
   CF_PAGESPROJECT: ${{secrets.CF_PAGESPROJECT }}
   CLOUDFLARE_API_TOKEN: ${{secrets.CLOUDFLARE_API_TOKEN }}
   #GIST_ID:  ${{ vars.GIST_ID }}
