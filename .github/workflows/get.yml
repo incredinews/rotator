@@ -54,7 +54,7 @@ jobs:
       - name: test compose
         run: |
               pwd
-              docker-compose config
+              docker compose config
       - name: WAITFORBUILD
         run: bash -c 'for img in $(grep "image:" docker-compose.yml |grep -v "#" ;cat Dockerfil*|grep FROM|sed "s/FROM//g" ) ;do docker  pull $img  & done ;wait'|| true
       - name: Restore cached Primes
@@ -78,8 +78,8 @@ jobs:
       - name: Run service 
         run: |
               pwd
-              docker-compose up
-              #docker-compose up action
+              docker compose up
+              #docker compose up action
               #bash action.sh
 #              cp -rv $(pwd)/ /home/runner/work/_temp/_github_home/
 #              ( cd /home/runner/work/_temp/_github_home/$(basename $(pwd)); test -e logs || mkdir logs ; bash action.sh 2>&1) || exit 1
