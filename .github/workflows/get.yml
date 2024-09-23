@@ -64,8 +64,27 @@ jobs:
           name: dist-without-markdown
           path: |
             logs
-      - name: Run service 
-        run: |
-              test -e logs || mkdir logs ;
-              bash action.sh 2>&1
-        #run: echo disabled
+            logs/*
+
+    - name: Restore cached Primes
+      id: cache-primes-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          cache
+        key: ${{ runner.os }}-primes
+
+    - name: Run service 
+      run: |
+            test -e logs || mkdir logs ;
+            bash action.sh 2>&1
+      #run: echo disabled
+    - name: Save Primes
+      id: cache-primes-save
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          cache
+          logs/main.log
+        key: ${{ steps.cache-primes-restore.outputs.cache-primary-key }}
+
