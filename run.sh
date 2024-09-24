@@ -231,8 +231,8 @@ echo 1 >/tmp/counter
 (cd "$sendbranch" && ( find -type f > index.txt ))
 find "${PARDIR}/pages/$sendbranch" -type f|wc -l |grep -q ^1$ || ( which npx &>/dev/null  &&  (npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" --branch "$sendbranch" "$sendbranch" 2>&1 )) & sleep 10
 ) &>>${PARDIR}/logs/pages.log &
-sleep 1
-sleep %(($(($(cat /tmp/counter)/2))%60))
+sleep 3
+sleep %(($(($(cat /tmp/counter)+1))%42))
 done
 wait
 )
