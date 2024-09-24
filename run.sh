@@ -136,11 +136,7 @@ echo 1 >/tmp/counter
             echo -n PROCESSING "$url" as $basedurl;
              test -e "${STARTDIR}/store_$id" && echo "|FILES COUNT:"$(find ${STARTDIR}/store_$id/ -type f|grep -v "\.git" |wc -l )"|"
 
-            test -e "${STARTDIR}/store_$id"  && (
-                test -e "${STARTDIR}/store_$id/fetch.status"  && gettime=$(date -d  $(cat "${STARTDIR}/store_$id/fetch.status" |cut -d'"' -f2) +%s);
-                
-               [[ $(($now-$gettime)) -le 1234 ]] || (  echo "pulling $id";cd  "${STARTDIR}/store_$id" ; git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/${id}".git" ;git pull |sed 's/^/PULL_'"${id}"':/g' )
-            ) 
+
 
             test -e "${STARTDIR}/store_$id"  || (            echo "loading $id"  ;
                 timeout 15 git clone https://gist.github.com/${id}.git "${STARTDIR}/store_$id"  &>/dev/null || git clone  https://$GIT_USER:$GIST_TOKEN@gist.github.com/${id}".git"  "${STARTDIR}/store_$id" 2>&1|sed 's/^/CLONE_'"${id}"':/g' ) 
@@ -155,6 +151,10 @@ echo 1 >/tmp/counter
               [[ $(($now-$gettime)) -le 1234 ]] && update=no
               test -e fetch.status || update=yes
               ## debounce above around 20 min, fetch always if no status
+              [[ "$update" = "yes" ]] && test -e "${STARTDIR}/store_$id"  && (
+              (  echo "pulling $id";cd  "${STARTDIR}/store_$id" ; git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/${id}".git" ;git pull |sed 's/^/PULL_'"${id}"':/g' )
+              )
+               
               test -e README.md && mv README.md 0_README.md
               [[ "$update" = "yes" ]] && {
                   echo -n "LOAD:"
