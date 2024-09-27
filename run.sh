@@ -202,12 +202,13 @@ echo 1 >/tmp/counter
               test -e "${STARTDIR}/store_$id"  && (cd "${STARTDIR}/store_$id" && ( cd "${STARTDIR}/store_$id";find -type f -name "*.json"; find -type f -name "*.xml" )) | while read outfile;do
                  
                  outname=$(echo "${outfile}" |sed 's/^/'${basedurl}'/g'|sed 's~\./~/~g'|sed 's~/\+~/~g'|sed 's~/~.~g')
-                 echo "copy $outfile | AS |$outname| to | ${PARDIR}/pages/${branchname}/ " &>>${PARDIR}/logs/files.log 
+                 [[ "$DEBUGME" = "true" ]] && echo "copy $outfile | AS |$outname| to | ${PARDIR}/pages/${branchname}/ " &>>${PARDIR}/logs/files.log 
+                 
                  cp "${STARTDIR}/store_$id/$outfile" "${PARDIR}/pages/${branchname}/${outname}"      &>>${PARDIR}/logs/files.log 
                  
               done
               grep -q -e "http error: 404 Not Found" fetch.status || (git status --porcelain|wc -l |grep -q 0 || {
-                  echo -n "pushing "$(git remote -v |head -n 1)"|$(test -e fetch.status && cat fetch.status)"
+                  echo -n "pushing "$(git remote -v |cut -d @ -f2- |head -n 1)"|$(test -e fetch.status && cat fetch.status)"
                   #test -e fetch.status && cat fetch.status
                   
                   git status 2>&1|grep -e modified -e ndert -e json
@@ -215,7 +216,7 @@ echo 1 >/tmp/counter
                   git config  user.email "gist@github.com" 
  
                   git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/${id}.git
-                  ( git remote -v 2>&1;git add -A 2>&1 ;git commit -m "updates $(date -u)" 2>&1|sed 's/\t/ /g' |tr -d '\n'|sed 's/modified/µ/g' ;git push 2>&1 ) |sed 's/^/PUSH_'"${id}"':/g' &
+                  ( git remote -v 2>&1 |cut -d @ -f2- |head -n1 ;git add -A 2>&1 |sed 's/\t/ /g' |tr -d '\n';git commit -m "updates $(date -u)" 2>&1|sed 's/\t/ /g' |tr -d '\n'|sed 's/modified/µ/g' ;git push 2>&1  |sed 's/\t/ /g' |tr -d '\n') |sed 's/^/PUSH_'"${id}"':/g' &
                   echo -n ; } ;
               )
                ) 2>&1 |sed 's~^~'"$safeurl"' : ~g'  >> ${PARDIR}/logs/fetch.log & 
