@@ -177,7 +177,7 @@ echo 1 >/tmp/counter
                     curl -kLv "$url" -o current.xml 2>> ${PARDIR}/logs/curl.log
                     ## restore on failure
                     #grep -q 'fetched http' fetch.status || ( echo using backup;test -e last.json && (cp last.fetch fetch.status; cp last.json current.json)   )
-                    
+                    [[ "$validjson" = "yes" ]] ||  ( echo using backup;test -e last.json && (cp last.fetch fetch.status; cp last.json current.json)   )
                     test -e ${PARDIR}/logs/curl.log && rm ${PARDIR}/logs/curl.log
                    )
                 echo -n ; } ;
