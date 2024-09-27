@@ -157,6 +157,8 @@ echo 1 >/tmp/counter
               )
                
               test -e README.md && mv README.md 0_README.md
+              echo -n "LOAD:"$( cut -d" " -f1-3 /proc/loadavg)"|update=$update"
+
               [[ "$update" = "yes" ]] && {
                   #echo -n "LOAD (w "$(which ff)"):"
                   echo -n "LOAD (w "$(which ff)"):"
