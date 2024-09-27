@@ -258,7 +258,7 @@ mkdir main
 ( find -type f -name "*.json" ;find -type f -name "*.xml" ) > main/index.txt
 cat main/index.txt | jq -Rn '{date: "'$(date -u +%s)'", lines: [inputs]}' > main/index.json
 
-which npx &>/dev/null  &&  ( npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" main 2>&1 )
+which npx &>/dev/null  &&  ( npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" main 2>&1 |grep -v -e "Deploying\.\." -e "Uploading\.\."|tr -d'\n" )
 ) &>>${PARDIR}/logs/pages.log 
 )
 ls -1
