@@ -160,7 +160,8 @@ echo 1 >/tmp/counter
               echo -n "LOAD:"$( cut -d" " -f1-3 /proc/loadavg)"|update=$update"
 
               [[ "$update" = "yes" ]] && {
-                  #echo -n "LOAD (w "$(which ff)"):"
+				  ( cd  "${STARTDIR}/store_$id"
+                  #echo -n "LOAD (w "$(pwd;echo "@" ;which ff)"):"
                   echo -n "LOAD (w "$(which ff)"):"
                   echo $( test -e fetch.status && echo "("$(($now-$gettime))"s ago )" ; )" "
                     test -e last.fetch && rm last.fetch
@@ -175,6 +176,7 @@ echo 1 >/tmp/counter
                     ## restore on failure
                     grep -q 'fetched http' fetch.status || ( echo using backup;test -e last.json && (cp last.fetch fetch.status; cp last.json current.json)   )
                     test -e ${PARDIR}/logs/curl.log && rm ${PARDIR}/logs/curl.log
+                   )
                 echo -n ; } ;
 
               [[ "$update" = "no" ]] && {    
@@ -185,10 +187,11 @@ echo 1 >/tmp/counter
              
               
               
-              test -e fetch.status && cat fetch.status
+              #test -e fetch.status && cat fetch.status
               test -e last.json && rm last.json
               test -e last.fetch && rm last.fetch
               (cat current.json |jq .>/dev/null) ||python3 ${PARDIR}/process-ff-item.py 2>&1 
+              
             echo -n ; } ;
               branchname=$(echo "$basedurl"|sed 's/_/=/g'|base64 -d|cut -d"/" -f3|sed 's/\./-/g')
               test -e ${PARDIR}/pages/${branchname} || mkdir ${PARDIR}/pages/${branchname}
