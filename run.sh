@@ -248,7 +248,7 @@ echo 1 >/tmp/counter
   
 (
 (cd "$sendbranch" && ( find -type f > index.txt ))
-find "${PARDIR}/pages/$sendbranch" -type f|wc -l |grep -q ^1$ || ( which npx &>/dev/null  &&  (npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" --commit-dirty=true --branch "$sendbranch" "$sendbranch" 2>&1 |grep -v -e "Deploying\.\." -e "Uploading\.\."|tr -d'\n')) & sleep 10
+find "${PARDIR}/pages/$sendbranch" -type f|wc -l |grep -q ^1$ || ( which npx &>/dev/null  &&  (npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" --commit-dirty=true --branch "$sendbranch" "$sendbranch" 2>&1 |sed 's/\r/\n/g' |grep -v -e "Deploying\.\." -e "Uploading\.\."|tr -d'\n')) & sleep 10
 ) &>>${PARDIR}/logs/pages.log &
 sleep 3
 
@@ -264,7 +264,7 @@ mkdir main
 ( find -type f -name "*.json" ;find -type f -name "*.xml" ) > main/index.txt
 cat main/index.txt | jq -Rn '{date: "'$(date -u +%s)'", lines: [inputs]}' > main/index.json
 
-which npx &>/dev/null  &&  ( npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" main 2>&1 |grep -v -e "Deploying\.\." -e "Uploading\.\."|tr -d'\n' )
+which npx &>/dev/null  &&  ( npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" main 2>&1 |sed 's/\r/\n/g' |grep -v -e "Deploying\.\." -e "Uploading\.\."|tr -d'\n' )
 ) &>>${PARDIR}/logs/pages.log 
 )
 ls -1
