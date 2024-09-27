@@ -174,9 +174,18 @@ echo 1 >/tmp/counter
                     test -e fetch.status && echo "RES:"$(cat fetch.status)" JSON_OK:"$validjson
                     #grep -q 'msg="fetched ' fetch.status && curl -kLv "$url" -o current.xml 2>> ${PARDIR}/logs/curl.log
                     curl -kLv "$url" -o current.xml 2>> ${PARDIR}/logs/curl.log
+
+
+
+                    #test -e fetch.status && cat fetch.status
+                    test -e last.json && rm last.json
+                    test -e last.fetch && rm last.fetch
+                    (cat current.json |jq .>/dev/null) && python3 ${PARDIR}/process-ff-item.py 2>&1 
                     ## restore on failure
                     #grep -q 'fetched http' fetch.status || ( echo using backup;test -e last.json && (cp last.fetch fetch.status; cp last.json current.json)   )
+
                     [[ "$validjson" = "yes" ]] ||  ( echo using backup;test -e last.json && (cp last.fetch fetch.status; cp last.json current.json)   )
+                    
                     test -e ${PARDIR}/logs/curl.log && rm ${PARDIR}/logs/curl.log
                    
                 echo -n ; } ;
@@ -184,15 +193,7 @@ echo 1 >/tmp/counter
               [[ "$update" = "no" ]] && {    
                     echo -n "WAIT:"
                     echo $( test -e fetch.status && echo "("$(($now-$gettime))"s ago )" ; )" "
-                echo -n ; } ;
-
-             
-              
-              
-              #test -e fetch.status && cat fetch.status
-              test -e last.json && rm last.json
-              test -e last.fetch && rm last.fetch
-              (cat current.json |jq .>/dev/null) ||python3 ${PARDIR}/process-ff-item.py 2>&1 
+                echo -n ; } ; 
               
             echo -n ; } ;
               branchname=$(echo "$basedurl"|sed 's/_/=/g'|base64 -d|cut -d"/" -f3|sed 's/\./-/g')
