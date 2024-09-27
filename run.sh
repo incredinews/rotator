@@ -160,7 +160,7 @@ echo 1 >/tmp/counter
               echo -n "LOAD:"$( cut -d" " -f1-3 /proc/loadavg)"|update=$update |"
 
               [[ "$update" = "yes" ]] && {
-				  ( cd  "${STARTDIR}/store_$id"
+				   cd  "${STARTDIR}/store_$id"
                   #echo -n "LOAD (w "$(pwd;echo "@" ;which ff)"):"
                   echo -n "LOAD (w "$(which ff)"):"
                   echo $( test -e fetch.status && echo "("$(($now-$gettime))"s ago )" ; )" "
@@ -179,7 +179,7 @@ echo 1 >/tmp/counter
                     #grep -q 'fetched http' fetch.status || ( echo using backup;test -e last.json && (cp last.fetch fetch.status; cp last.json current.json)   )
                     [[ "$validjson" = "yes" ]] ||  ( echo using backup;test -e last.json && (cp last.fetch fetch.status; cp last.json current.json)   )
                     test -e ${PARDIR}/logs/curl.log && rm ${PARDIR}/logs/curl.log
-                   )
+                   
                 echo -n ; } ;
 
               [[ "$update" = "no" ]] && {    
