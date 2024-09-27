@@ -108,7 +108,7 @@ echo 1 >/tmp/counter
   for url in $(echo "$fullist");do 
  
   echo 
-  echo "...#"$(cat /tmp/counter)
+  echo -n "...#"$(cat /tmp/counter)"|"
   echo $(($(cat /tmp/counter)+1)) > /tmp/counter
   
 
@@ -129,10 +129,9 @@ echo 1 >/tmp/counter
            [[ "$id" = "null" ]] && { echo ":ID NOT READABLE:" ; } ;
            [[ "$id" = "null" ]] || { 
             test -e "${STARTDIR}/store_$id" && echo    "|FILES#:"$(find ${STARTDIR}/store_$id/ -type f|grep -v "\.git" |wc -l )"|"
-            test -e "${STARTDIR}/store_$id" && test -e "${STARTDIR}/store_$id/fetch.status" && cat  "${STARTDIR}/store_$id/fetch.status"  |sed 's/http.\+//g' |sed 's/^/BFORE:/g'
 
             (
-            echo
+#            echo
             echo -n "LOAD:"$( cut -d" " -f1-3 /proc/loadavg)"|"
             echo -n PROCESSING "$url" as $basedurl;
              test -e "${STARTDIR}/store_$id" && echo "|FILES COUNT:"$(find ${STARTDIR}/store_$id/ -type f|grep -v "\.git" |wc -l )"|"
@@ -155,7 +154,7 @@ echo 1 >/tmp/counter
               [[ "$update" = "yes" ]] && test -e "${STARTDIR}/store_$id"  && (
               (  echo "pulling $id";cd  "${STARTDIR}/store_$id" ; git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/${id}".git" ;git pull |sed 's/^/PULL_'"${id}"':/g' )
               )
-               
+              test -e "${STARTDIR}/store_$id" && test -e "${STARTDIR}/store_$id/fetch.status" && cat  "${STARTDIR}/store_$id/fetch.status"  |sed 's/http.\+//g' |sed 's/^/BFORE:/g'
               test -e README.md && mv README.md 0_README.md
               echo -n "LOAD:"$( cut -d" " -f1-3 /proc/loadavg)"|update=$update |"
 
