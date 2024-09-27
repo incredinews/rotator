@@ -218,7 +218,7 @@ echo 1 >/tmp/counter
                   git config  user.email "gist@github.com" 
  
                   git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/${id}.git
-                  ( git remote -v 2>&1 |cut -d @ -f2- |head -n1 ;git add -A 2>&1 |sed 's/\t/ /g' |tr -d '\n';git commit -m "updates $(date -u)" 2>&1|sed 's/\t/ /g' |tr -d '\n'|sed 's/modified/µ/g' ;git push 2>&1  |sed 's/\t/ /g' |tr -d '\n') |sed 's/^/PUSH_'"${id}"':/g' &
+                  ( git remote -v 2>&1 |cut -d @ -f2- |head -n1 ;git add -A 2>&1 |sed 's/\t/ /g' |tr -d '\n';git commit -m "updates $(date -u)" 2>&1|sed 's/\t/ /g' |tr -d '\n'|sed 's/modified/µ/g' ;git push 2>&1|grep -v origin |sed 's/\t/ /g' |tr -d '\n') |sed 's/^/PUSH_'"${id}"':/g' &
                   echo -n ; } ;
               )
                ) 2>&1 |sed 's~^~'"$safeurl"' : ~g'  >> ${PARDIR}/logs/fetch.log & 
