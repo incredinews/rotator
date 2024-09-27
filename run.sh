@@ -197,7 +197,9 @@ echo 1 >/tmp/counter
                  
               done
               grep -q -e "http error: 404 Not Found" fetch.status || (git status --porcelain|wc -l |grep -q 0 || {
-                  echo "pushing "$(git remote -v |head -n 1)
+                  echo -n "pushing "$(git remote -v |head -n 1)"|$(test -e fetch.status && cat fetch.status)"
+                  test -e fetch.status && cat fetch.status
+                  
                   git status 2>&1|grep -e modified -e ndert -e json
                   git config  user.name "User.Name"
                   git config  user.email "gist@github.com" 
