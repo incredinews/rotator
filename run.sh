@@ -171,7 +171,7 @@ echo 1 >/tmp/counter
                     ##get a json array
                     (echo -n "[";ff  "$url" 2>fetch.status |sed "s/$/,/g")|tr -d '\n'|sed 's/,$/]/g' > current.json 
                     validjson=no
-                    cat current.json |jq .>/dev/null) && validjson=yes
+                    (cat current.json |jq .>/dev/null) && validjson=yes
                     test -e fetch.status && echo "RES:"$(cat fetch.status)" JSON_OK:"$validjson
                     #grep -q 'msg="fetched ' fetch.status && curl -kLv "$url" -o current.xml 2>> ${PARDIR}/logs/curl.log
                     curl -kLv "$url" -o current.xml 2>> ${PARDIR}/logs/curl.log
