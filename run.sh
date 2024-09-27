@@ -180,6 +180,8 @@ echo 1 >/tmp/counter
                     #test -e fetch.status && cat fetch.status
                     test -e last.json && rm last.json
                     test -e last.fetch && rm last.fetch
+                    test -e "${STARTDIR}/store_$id"  &&  test -e    "${STARTDIR}/store_$id/fetch.status" && cat  "${STARTDIR}/store_$id/fetch.status"  |sed 's/http.\+//g' |sed 's/^/AFTER:/g'
+
                     (cat current.json |jq .>/dev/null) && python3 ${PARDIR}/process-ff-item.py 2>&1 
                     ## restore on failure
                     #grep -q 'fetched http' fetch.status || ( echo using backup;test -e last.json && (cp last.fetch fetch.status; cp last.json current.json)   )
@@ -220,7 +222,6 @@ echo 1 >/tmp/counter
                   echo -n ; } ;
               )
                ) 2>&1 |sed 's~^~'"$safeurl"' : ~g'  >> ${PARDIR}/logs/fetch.log & 
-              test -e "${STARTDIR}/store_$id"  &&  test -e    "${STARTDIR}/store_$id/fetch.status" && cat  "${STARTDIR}/store_$id/fetch.status"  |sed 's/http.\+//g' |sed 's/^/AFTER:/g'
 
               echo -n ; } ;
               
