@@ -128,7 +128,7 @@ echo 1 >/tmp/counter
            id=$(cat "${year}_${basedurl}"|jq  -r .id)
            [[ "$id" = "null" ]] && { echo ":ID NOT READABLE:" ; } ;
            [[ "$id" = "null" ]] || { 
-            test -e "${STARTDIR}/store_$id" && echo    "|FILES COUNT:"$(find ${STARTDIR}/store_$id/ -type f|grep -v "\.git" |wc -l )"|"
+            test -e "${STARTDIR}/store_$id" && echo    "|FILES#:"$(find ${STARTDIR}/store_$id/ -type f|grep -v "\.git" |wc -l )"|"
             test -e "${STARTDIR}/store_$id" && test -e "${STARTDIR}/store_$id/fetch.status" && cat  "${STARTDIR}/store_$id/fetch.status"  |sed 's/http.\+//g' |sed 's/^/BFORE:/g'
 
             (
@@ -157,7 +157,7 @@ echo 1 >/tmp/counter
               )
                
               test -e README.md && mv README.md 0_README.md
-              echo -n "LOAD:"$( cut -d" " -f1-3 /proc/loadavg)"|update=$update"
+              echo -n "LOAD:"$( cut -d" " -f1-3 /proc/loadavg)"|update=$update |"
 
               [[ "$update" = "yes" ]] && {
 				  ( cd  "${STARTDIR}/store_$id"
@@ -170,11 +170,14 @@ echo 1 >/tmp/counter
                     test -e fetch.status &&  ( mv fetch.status last.fetch &>>${PARDIR}/logs/files.log )
                     ##get a json array
                     (echo -n "[";ff  "$url" 2>fetch.status |sed "s/$/,/g")|tr -d '\n'|sed 's/,$/]/g' > current.json 
-                    test -e fetch.status && echo "RES:"$(cat fetch.status)
+                    validjson=no
+                    cat current.json |jq .>/dev/null) && validjson=yes
+                    test -e fetch.status && echo "RES:"$(cat fetch.status)" JSON_OK:"$validjson
                     #grep -q 'msg="fetched ' fetch.status && curl -kLv "$url" -o current.xml 2>> ${PARDIR}/logs/curl.log
                     curl -kLv "$url" -o current.xml 2>> ${PARDIR}/logs/curl.log
                     ## restore on failure
-                    grep -q 'fetched http' fetch.status || ( echo using backup;test -e last.json && (cp last.fetch fetch.status; cp last.json current.json)   )
+                    #grep -q 'fetched http' fetch.status || ( echo using backup;test -e last.json && (cp last.fetch fetch.status; cp last.json current.json)   )
+                    
                     test -e ${PARDIR}/logs/curl.log && rm ${PARDIR}/logs/curl.log
                    )
                 echo -n ; } ;
@@ -245,7 +248,7 @@ echo 1 >/tmp/counter
   
 (
 (cd "$sendbranch" && ( find -type f > index.txt ))
-find "${PARDIR}/pages/$sendbranch" -type f|wc -l |grep -q ^1$ || ( which npx &>/dev/null  &&  (npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" --commit-dirty=true --branch "$sendbranch" "$sendbranch" 2>&1 )) & sleep 10
+find "${PARDIR}/pages/$sendbranch" -type f|wc -l |grep -q ^1$ || ( which npx &>/dev/null  &&  (npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" --commit-dirty=true --branch "$sendbranch" "$sendbranch" 2>&1 |grep -v -e "Deploying\.\." -e "Uploading\.\."|tr -d'\n')) & sleep 10
 ) &>>${PARDIR}/logs/pages.log &
 sleep 3
 
@@ -261,7 +264,7 @@ mkdir main
 ( find -type f -name "*.json" ;find -type f -name "*.xml" ) > main/index.txt
 cat main/index.txt | jq -Rn '{date: "'$(date -u +%s)'", lines: [inputs]}' > main/index.json
 
-which npx &>/dev/null  &&  ( npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" main 2>&1 |grep -v -e "Deploying\.\." -e "Uploading\.\."|tr -d'\n" )
+which npx &>/dev/null  &&  ( npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" main 2>&1 |grep -v -e "Deploying\.\." -e "Uploading\.\."|tr -d'\n' )
 ) &>>${PARDIR}/logs/pages.log 
 )
 ls -1
