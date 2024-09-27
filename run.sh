@@ -168,6 +168,7 @@ echo 1 >/tmp/counter
                     test -e fetch.status &&  ( mv fetch.status last.fetch &>>${PARDIR}/logs/files.log )
                     ##get a json array
                     (echo -n "[";ff  "$url" 2>fetch.status |sed "s/$/,/g")|tr -d '\n'|sed 's/,$/]/g' > current.json 
+                    echo "RES:"$(cat fetch.status)
                     #grep -q 'msg="fetched ' fetch.status && curl -kLv "$url" -o current.xml 2>> ${PARDIR}/logs/curl.log
                     curl -kLv "$url" -o current.xml 2>> ${PARDIR}/logs/curl.log
                     ## restore on failure
@@ -194,7 +195,7 @@ echo 1 >/tmp/counter
               test -e "${STARTDIR}/store_$id"  && (cd "${STARTDIR}/store_$id" && ( cd "${STARTDIR}/store_$id";find -type f -name "*.json"; find -type f -name "*.xml" )) | while read outfile;do
                  
                  outname=$(echo "${outfile}" |sed 's/^/'${basedurl}'/g'|sed 's~\./~/~g'|sed 's~/\+~/~g'|sed 's~/~.~g')
-                 echo "copy $outfile | AS |$outname| to | ${PARDIR}/pages/${branchname}/${outname} " &>>${PARDIR}/logs/files.log 
+                 echo "copy $outfile | AS |$outname| to | ${PARDIR}/pages/${branchname}/ " &>>${PARDIR}/logs/files.log 
                  cp "${STARTDIR}/store_$id/$outfile" "${PARDIR}/pages/${branchname}/${outname}"      &>>${PARDIR}/logs/files.log 
                  
               done
@@ -207,7 +208,7 @@ echo 1 >/tmp/counter
                   git config  user.email "gist@github.com" 
  
                   git remote set-url origin https://$GIT_USER:$GIST_TOKEN@gist.github.com/${id}.git
-                  ( git remote -v 2>&1;git add -A 2>&1 ;git commit -m "updates $(date -u)" 2>&1 ;git push 2>&1 ) |sed 's/^/PUSH_'"${id}"':/g' &
+                  ( git remote -v 2>&1;git add -A 2>&1 ;git commit -m "updates $(date -u)" 2>&1|sed 's/\t/ /g' |tr -d '\n'|sed 's/modified/µ/g' ;git push 2>&1 ) |sed 's/^/PUSH_'"${id}"':/g' &
                   echo -n ; } ;
               )
                ) 2>&1 |sed 's~^~'"$safeurl"' : ~g'  >> ${PARDIR}/logs/fetch.log & 
@@ -216,7 +217,7 @@ echo 1 >/tmp/counter
               echo -n ; } ;
               
         } & 
-        sleep 3
+        sleep 2
 #grep msg=  ${PARDIR}/logs/*.log |sed 's/http.\+//g' |sort -u
 
 done
