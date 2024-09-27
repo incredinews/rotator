@@ -162,29 +162,30 @@ echo 1 >/tmp/counter
               [[ "$update" = "yes" ]] && {
                   #echo -n "LOAD (w "$(which ff)"):"
                   echo -n "LOAD (w "$(which ff)"):"
+                  echo $( test -e fetch.status && echo "("$(($now-$gettime))"s ago )" ; )" "
                     test -e last.fetch && rm last.fetch
                     test -e last.json  && rm last.json
                     test -e current.json &&  ( mv current.json last.json  &>>${PARDIR}/logs/files.log )
                     test -e fetch.status &&  ( mv fetch.status last.fetch &>>${PARDIR}/logs/files.log )
                     ##get a json array
                     (echo -n "[";ff  "$url" 2>fetch.status |sed "s/$/,/g")|tr -d '\n'|sed 's/,$/]/g' > current.json 
-                    echo "RES:"$(cat fetch.status)
+                    test -e fetch.status && echo "RES:"$(cat fetch.status)
                     #grep -q 'msg="fetched ' fetch.status && curl -kLv "$url" -o current.xml 2>> ${PARDIR}/logs/curl.log
                     curl -kLv "$url" -o current.xml 2>> ${PARDIR}/logs/curl.log
                     ## restore on failure
-                    grep -q 'msg="fetched ' fetch.status || ( echo using backup;test -e last.json && (cp last.fetch fetch.status; cp last.json current.json) &>>${PARDIR}/logs/files.log  )
+                    grep -q 'fetched http' fetch.status || ( echo using backup;test -e last.json && (cp last.fetch fetch.status; cp last.json current.json)   )
                     test -e ${PARDIR}/logs/curl.log && rm ${PARDIR}/logs/curl.log
                 echo -n ; } ;
 
               [[ "$update" = "no" ]] && {    
                     echo -n "WAIT:"
-
+                    echo $( test -e fetch.status && echo "("$(($now-$gettime))"s ago )" ; )" "
                 echo -n ; } ;
 
              
               
-              echo $( test -e fetch.status && echo "("$(($now-$gettime))"s ago )" ; )" "
-              test -e tech.status && cat fetch.status
+              
+              test -e fetch.status && cat fetch.status
               test -e last.json && rm last.json
               test -e last.fetch && rm last.fetch
               (cat current.json |jq .>/dev/null) ||python3 ${PARDIR}/process-ff-item.py 2>&1 
@@ -201,7 +202,7 @@ echo 1 >/tmp/counter
               done
               grep -q -e "http error: 404 Not Found" fetch.status || (git status --porcelain|wc -l |grep -q 0 || {
                   echo -n "pushing "$(git remote -v |head -n 1)"|$(test -e fetch.status && cat fetch.status)"
-                  test -e fetch.status && cat fetch.status
+                  #test -e fetch.status && cat fetch.status
                   
                   git status 2>&1|grep -e modified -e ndert -e json
                   git config  user.name "User.Name"
@@ -241,7 +242,7 @@ echo 1 >/tmp/counter
   
 (
 (cd "$sendbranch" && ( find -type f > index.txt ))
-find "${PARDIR}/pages/$sendbranch" -type f|wc -l |grep -q ^1$ || ( which npx &>/dev/null  &&  (npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" --branch "$sendbranch" "$sendbranch" 2>&1 )) & sleep 10
+find "${PARDIR}/pages/$sendbranch" -type f|wc -l |grep -q ^1$ || ( which npx &>/dev/null  &&  (npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" --commit-dirty=true --branch "$sendbranch" "$sendbranch" 2>&1 )) & sleep 10
 ) &>>${PARDIR}/logs/pages.log &
 sleep 3
 
