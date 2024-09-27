@@ -66,11 +66,11 @@ urllist=$(curl -s https://incredinews.github.io/feed-sources/raw/lang/de.rss.jso
     id=""
     test -e "${STARTDIR}/index/${year}_${basedurl}" && { 
         (
-        echo found file for "$url" as $basedurl;
+        #echo found file for "$url" as $basedurl;
         id=$(cat "${year}_${basedurl}"|jq  -r .id)
         
         [[ "$id" = "null" ]] && {   echo "failed to find id ..deleting idx" ;grep -q "$GIT_USER" "${year}_${basedurl}" && echo "sems like authetication problems"; cat ${year}_${basedurl} ; rm "${year}_${basedurl}" ; } ;
-        [[ "$id" = "null" ]] || {   echo "found at "$id  ; } ;
+        #[[ "$id" = "null" ]] || {   echo "found at "$id  ; } ;
         ) &>> ${PARDIR}/logs/main.log
 
         }
