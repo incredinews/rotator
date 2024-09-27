@@ -128,11 +128,12 @@ echo 1 >/tmp/counter
            id=$(cat "${year}_${basedurl}"|jq  -r .id)
            [[ "$id" = "null" ]] && { echo ":ID NOT READABLE:" ; } ;
            [[ "$id" = "null" ]] || { 
-            test -e "${STARTDIR}/store_$id" && echo "|FILES COUNT:"$(find ${STARTDIR}/store_$id/ -type f|grep -v "\.git" |wc -l )"|"
-             test -e "${STARTDIR}/store_$id"  &&  test -e    "${STARTDIR}/store_$id/fetch.status" && cat  "${STARTDIR}/store_$id/fetch.status"  |sed 's/http.\+//g' |sed 's/^/BFORE:/g'
+            test -e "${STARTDIR}/store_$id" && echo    "|FILES COUNT:"$(find ${STARTDIR}/store_$id/ -type f|grep -v "\.git" |wc -l )"|"
+            test -e "${STARTDIR}/store_$id" && test -e "${STARTDIR}/store_$id/fetch.status" && cat  "${STARTDIR}/store_$id/fetch.status"  |sed 's/http.\+//g' |sed 's/^/BFORE:/g'
 
             (
             echo
+            echo -n "LOAD:"$( cut -d" " -f1-3 /proc/loadavg)"|"
             echo -n PROCESSING "$url" as $basedurl;
              test -e "${STARTDIR}/store_$id" && echo "|FILES COUNT:"$(find ${STARTDIR}/store_$id/ -type f|grep -v "\.git" |wc -l )"|"
 
@@ -157,14 +158,19 @@ echo 1 >/tmp/counter
                
               test -e README.md && mv README.md 0_README.md
               [[ "$update" = "yes" ]] && {
-                  echo -n "LOAD:"
-                    test -e current.json &&  ( cp current.json last.json &>>${PARDIR}/logs/files.log )
+                  #echo -n "LOAD (w "$(which ff)"):"
+                  echo -n "LOAD (w "$(which ff)"):"
+                    test -e last.fetch && rm last.fetch
+                    test -e last.json  && rm last.json
+                    test -e current.json &&  ( mv current.json last.json  &>>${PARDIR}/logs/files.log )
+                    test -e fetch.status &&  ( mv fetch.status last.fetch &>>${PARDIR}/logs/files.log )
                     ##get a json array
                     (echo -n "[";ff  "$url" 2>fetch.status |sed "s/$/,/g")|tr -d '\n'|sed 's/,$/]/g' > current.json 
+                    #grep -q 'msg="fetched ' fetch.status && curl -kLv "$url" -o current.xml 2>> ${PARDIR}/logs/curl.log
+                    curl -kLv "$url" -o current.xml 2>> ${PARDIR}/logs/curl.log
                     ## restore on failure
-                    grep -q 'msg="fetched ' fetch.status || ( echo using backup; cp last.json current.json &>>${PARDIR}/logs/files.log  )
+                    grep -q 'msg="fetched ' fetch.status || ( echo using backup;test -e last.json && (cp last.fetch fetch.status; cp last.json current.json) &>>${PARDIR}/logs/files.log  )
                     test -e ${PARDIR}/logs/curl.log && rm ${PARDIR}/logs/curl.log
-                    grep -q 'msg="fetched ' fetch.status && curl -kLv "$url" -o current.xml 2>> ${PARDIR}/logs/curl.log
                 echo -n ; } ;
 
               [[ "$update" = "no" ]] && {    
@@ -177,6 +183,7 @@ echo 1 >/tmp/counter
               echo $( test -e fetch.status && echo "("$(($now-$gettime))"s ago )" ; )" "
               test -e tech.status && cat fetch.status
               test -e last.json && rm last.json
+              test -e last.fetch && rm last.fetch
               (cat current.json |jq .>/dev/null) ||python3 ${PARDIR}/process-ff-item.py 2>&1 
             echo -n ; } ;
               branchname=$(echo "$basedurl"|sed 's/_/=/g'|base64 -d|cut -d"/" -f3|sed 's/\./-/g')
@@ -232,7 +239,8 @@ echo 1 >/tmp/counter
 find "${PARDIR}/pages/$sendbranch" -type f|wc -l |grep -q ^1$ || ( which npx &>/dev/null  &&  (npx wrangler pages deploy --project-name "$CF_PAGESPROJECT" --branch "$sendbranch" "$sendbranch" 2>&1 )) & sleep 10
 ) &>>${PARDIR}/logs/pages.log &
 sleep 3
-sleep %(($(($(cat /tmp/counter)+1))%42))
+
+sleep $(($(($(cat /tmp/counter)+1))%42))
 done
 wait
 )
