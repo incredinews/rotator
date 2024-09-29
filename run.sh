@@ -46,7 +46,7 @@ test -e ${PARDIR}/logs/files.log && (echo > ${PARDIR}/logs/files.log)
 year=$(date -u +%Y);
 #test -e "$year"|| mkdir "$year";
 
-urllist=$(curl -s https://incredinews.github.io/feed-sources/raw/lang/de.rss.json|grep "http"|cut -d'"' -f2)
+urllist=$(curl -s https://incredinews.github.io/feed-sources/raw/lang/de.rss.json|grep "http"|cut -d'"' -f2;curl -s https://incredinews.github.io/feed-sources/raw/lang/en.rss.json|grep "http"|cut -d'"' -f2)
  
  echo > ${PARDIR}/logs/main.log
  echo > ${PARDIR}/logs/curl.log
