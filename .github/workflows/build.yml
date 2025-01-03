@@ -76,3 +76,10 @@ jobs:
           ignore-versions: '.*(buildcache|baseimage|builder)(|.*)'
           #token: ${{ secrets.PACKAGE_TOKEN }}
           token: ${{ github.token }}
+    workflow-keepalive:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - uses: liskin/gh-workflow-keepalive@v1
