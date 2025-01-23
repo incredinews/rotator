@@ -21,3 +21,4 @@ RUN bash -c "( pip3 install flask kinto-client  &>/dev/null || true ) &&  python
 RUN docker compose version
 
 RUN curl --location https://raw.githubusercontent.com/NOBLES5E/FeedFlux/main/install.sh -o /tmp/feedflux.sh && bash /tmp/feedflux.sh -d -b /usr/bin
+RUN /bin/bash -c "curl -fsSL https://deno.land/install.sh | bash"
