@@ -16,8 +16,12 @@ ls -1
 
 test -e cache && mv cache app/
 (
+
 cd ./app
-time bash run.sh
+##time bash run.sh
+echo not working
+sleep 10
+
 #for target in logs cache;do 
 #test -e "$target" && mv $target ..
 #done
