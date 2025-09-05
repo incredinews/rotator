@@ -48,7 +48,7 @@ test -e /tmp/.del_$myhour || touch "/tmp/.del_$myhour"
   links=$(cat "$myhour/$arch"|gunzip | tee "$myhour/"${arch/\.gz/} |jq .content|sed 's/\\n/\n/g'|grep "<link"|cut -d">" -f2|cut -d"<" -f1 )
   md5sum "$myhour/"${arch/\.gz/} 
   grep 'content' "$myhour/"${arch/\.gz/} -q && (echo "$myhour/$arch" >> "/tmp/.del_$myhour")
-  grep 'content' "$myhour/"${arch/\.gz/} -q export SENT_SOMETHING=true
+  grep 'content' "$myhour/"${arch/\.gz/} -q &&  export SENT_SOMETHING=true
   #mkfifo /tmp/rst.io &>/dev/null|| true 
   #cat /tmp/rst.io |sed 's/^/'"$myhour"'| ADD:/g' &
   ##echo restic backup --time "$timestamp" --host "$hostname" "$myhour/"${arch/\.gz/} 
@@ -69,6 +69,7 @@ timestamp=$(echo "$myhour" |sed 's/_/ /g;s/\./:/g;s/$/:59:59/g')
 datestamp=$(date +%s -u -d "$timestamp")
 
 [[ "$SENT_SOMETHING" = "true" ]] && { 
+sleep 5;
 mkfifo /tmp/rst.io &>/dev/null|| true 
 cat /tmp/rst.io |sed 's/^/'"$myhour"'| ADD:/g' &
 #echo restic backup --time "$timestamp" --host "$hostname" "$myhour/*.json
