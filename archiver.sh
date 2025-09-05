@@ -47,11 +47,12 @@ test -e /tmp/.del_$myhour || touch "/tmp/.del_$myhour"
   export RESTIC_HOST=$hostname
   links=$(cat "$myhour/$arch"|gunzip | tee "$myhour/"${arch/\.gz/} |jq .content|sed 's/\\n/\n/g'|grep "<link"|cut -d">" -f2|cut -d"<" -f1 )
   md5sum "$myhour/"${arch/\.gz/} 
-  export SENT_SOMETHING=true
-  mkfifo /tmp/rst.io &>/dev/null|| true 
-  cat /tmp/rst.io |sed 's/^/'"$myhour"'| ADD:/g' &
-  #echo restic backup --time "$timestamp" --host "$hostname" "$myhour/"${arch/\.gz/} 
-       restic backup --time "$timestamp" --host "$hostname" "$myhour/"${arch/\.gz/} &> /tmp/rst.io  && ( echo "$myhour/$arch" >> "/tmp/.del_$myhour" )
+  grep 'content' "$myhour/"${arch/\.gz/} -q && (echo "$myhour/$arch" >> "/tmp/.del_$myhour")
+  grep 'content' "$myhour/"${arch/\.gz/} -q export SENT_SOMETHING=true
+  #mkfifo /tmp/rst.io &>/dev/null|| true 
+  #cat /tmp/rst.io |sed 's/^/'"$myhour"'| ADD:/g' &
+  ##echo restic backup --time "$timestamp" --host "$hostname" "$myhour/"${arch/\.gz/} 
+  #     restic backup --time "$timestamp" --host "$hostname" "$myhour/"${arch/\.gz/} &> /tmp/rst.io  && ( echo "$myhour/$arch" >> "/tmp/.del_$myhour" )
   datestamp=$(date +%s -u -d "$timestamp")
   echo $timestamp " links: "$(echo "$links"|wc -l)
   ##                      batch n items for timestamp
@@ -61,10 +62,18 @@ test -e /tmp/.del_$myhour || touch "/tmp/.del_$myhour"
     #echo "$jsonout"|jq . -c ;#echo "$jsonout"
     ( curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${jsonout}"|jq .res|grep -v -e '": 0' -e '":0' |grep -v -e ^$ -e '^}$' -e '^{$' |sed 's/^/ADDURL:/g'   ;echo ) & sleep 0.5
   done
-  test -e "$myhour/"${arch/\.gz/} && rm "$myhour/"${arch/\.gz/}
+  #test -e "$myhour/"${arch/\.gz/} && rm "$myhour/"${arch/\.gz/}
 
 done;done
+timestamp=$(echo "$myhour" |sed 's/_/ /g;s/\./:/g;s/$/:59:59/g')
+datestamp=$(date +%s -u -d "$timestamp")
+
 [[ "$SENT_SOMETHING" = "true" ]] && { 
+mkfifo /tmp/rst.io &>/dev/null|| true 
+cat /tmp/rst.io |sed 's/^/'"$myhour"'| ADD:/g' &
+#echo restic backup --time "$timestamp" --host "$hostname" "$myhour/*.json
+     restic backup --time "$timestamp" --host "byhour" $myhour/*.json &> /tmp/rst.io 
+#  && ( echo "$myhour/$arch" >> "/tmp/.del_$myhour" )
 restic forget --keep-hourly 2 --prune 2>&1|grep json |grep -v ^$|sed 's/^/'"$myhour"'| /g'
 
 mkfifo /tmp/rst.io &>/dev/null|| true  
@@ -78,7 +87,7 @@ restic copy --from-repo /tmp/restic &> /tmp/rst.io && BACKUP_OK=true
 wait
 
 
-[[ "$BACKUP_OK" = "true" ]] && ( cmdlist=$(cat "/tmp/.del_$myhour" |sed 's/^/ rm /g;s/$/;/g') ; echo "COPY OK.. delete source "$(echo "$cmdlist"|grep rm |wc -l ) ;echo "open ""$DAVURL""feedarchive/;""$cmdlist"";quit" |lftp & cat "/tmp/.del_$myhour" |while read a ;do test -e "$a" && rm "$a";done ;wait )   
+[[ "$BACKUP_OK" = "true" ]] && ( cmdlist=$(cat "/tmp/.del_$myhour" |sed 's/^/ rm /g;s/$/;/g') ; echo "COPY OK.. delete source "$(echo "$cmdlist"|grep rm |wc -l ) ;echo "open ""$DAVURL""feedarchive/;""$cmdlist"";quit" |lftp & cat "/tmp/.del_$myhour" |while read a ;do test -e "$a" && rm "$a"  ${a/\.gz/} ;done ;wait )   
 rm -rf /tmp/restic
 test -e /tmp/restic || mkdir /tmp/restic
 restic -r /tmp/restic init|| true
