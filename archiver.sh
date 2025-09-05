@@ -74,7 +74,7 @@ cat /tmp/rst.io |sed 's/^/'"$myhour"'| ADD:/g' &
 #echo restic backup --time "$timestamp" --host "$hostname" "$myhour/*.json
      restic backup --time "$timestamp" --host "byhour" $myhour/*.json &> /tmp/rst.io 
 #  && ( echo "$myhour/$arch" >> "/tmp/.del_$myhour" )
-restic forget --keep-hourly 2 --prune 2>&1|grep json |grep -v ^$|sed 's/^/'"$myhour"'| /g'
+restic forget --keep-hourly 2 --prune 2>&1|grep -e byhost -e  json |grep -v ^$|sed 's/^/'"$myhour"'| /g'
 
 mkfifo /tmp/rst.io &>/dev/null|| true  
 
