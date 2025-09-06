@@ -40,7 +40,7 @@ export SENT_SOMETHING=false
 export RESTIC_REPOSITORY=/tmp/restic
 for feed in $(ls "$myhour" -1|cut -d_ -f1|sort -u );do  
 test -e /tmp/.del_$myhour || touch "/tmp/.del_$myhour"
-  for arch in $(ls "$myhour" -1|grep $feed|sort -n);do 
+  for arch in $(ls "$myhour" -1|grep $feed|sort -n|grep gz);do 
   ls -1 "$myhour/$arch" ;
   hostname=$(echo "$arch"|cut -d"_" -f1);
   timestamp=$(echo "$arch"|cut -d_ -f2-|cut -d"." -f1,2 |sed 's/_/ /g;s/\./:/g;s/$/:00/g');
