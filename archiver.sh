@@ -47,7 +47,7 @@ test -e /tmp/.del_$myhour || touch "/tmp/.del_$myhour"
   export RESTIC_HOST=$hostname
   
   links=$(cat "$myhour/$arch"|gunzip | tee "$myhour/"${arch/\.gz/} |jq .content|sed 's/\\n/\n/g'|grep "<link"|sed 's/\\"//g'|sed 's/link href=/link>/g'|cut -d">" -f2|cut -d"<" -f1 |sed 's/?ref=rss\///g' |grep -v ^$|grep -e ^ftp:// -e ^https:// -e ^http:// )
-  
+ grep -q "window._cf_chl_opt.cOgUHash" "$myhour/"${arch/\.gz/} || { 
   md5sum "$myhour/"${arch/\.gz/} 
   grep 'content' "$myhour/"${arch/\.gz/} -q && (echo "$myhour/$arch" >> "/tmp/.del_$myhour")
   grep 'content' "$myhour/"${arch/\.gz/} -q &&  export SENT_SOMETHING=true
@@ -58,7 +58,7 @@ test -e /tmp/.del_$myhour || touch "/tmp/.del_$myhour"
   datestamp=$(date +%s -u -d "$timestamp")
   echo $timestamp " links: "$(echo "$links"|wc -l)
   ##                      batch n items for timestamp
-  grep -q "window._cf_chl_opt.cOgUHash" "$myhour/"${arch/\.gz/} || { echo "$links"| xargs -P 1 -n 22|while read list;do 
+  echo "$links"| xargs -P 1 -n 22|while read list;do 
     tsout='"ts": {';out='{"urls": [';for m in $list;do out="$out"'"'"$m"'",';tsout="$tsout"'"'"$m"'": '"$datestamp"',' ;done  
     jsonout=$(echo "$out"|sed 's/,$/],/g')$(echo "$tsout"|sed 's/,$/}/g')"}"  ;
     #echo "$jsonout"|jq . -c ;#echo "$jsonout"
