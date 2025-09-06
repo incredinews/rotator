@@ -114,7 +114,8 @@ echo "$TSURL"|grep -e "^//::1" -e "//127\.0\.0\.1" && export BATCHSIZE=99
   feed=$(echo "$elem"|cut -d"/" -f1)
    cat /tmp/urls.$feed/$m
   #( cat /tmp/urls.$feed/$m|grep -q -e ^http:// -e ^ftp:// -e ^redis:// -e ^rediss:// -e ^https:// -e ^dav:// -e ^davs:// -e ^smb:// -e ^s3:// ) || cat /tmp/urls.$feed/$m
-  ( cat /tmp/urls.$feed/$m|grep -q -e "^http://" -e "^ftp://" -e "^redis://" -e "^rediss://" -e "^https://" -e "^dav://" -e "^davs://" -e "^smb://" -e "^s3:/"/ ) && (
+   cat /tmp/urls.$feed/$m|grep  -e "^http://" -e "^ftp://" -e "^redis://" -e "^rediss://" -e "^https://" -e "^dav://" -e "^davs://" -e "^smb://" -e "^s3://"
+  ( cat /tmp/urls.$feed/$m|grep -q -e "^http://" -e "^ftp://" -e "^redis://" -e "^rediss://" -e "^https://" -e "^dav://" -e "^davs://" -e "^smb://" -e "^s3://" ) && (
   #echo $m
     loval=$(cat /tmp/seen.$feed/$m|sort -n |head -n1)
     hival=$(cat /tmp/seen.$feed/$m|sort -n |tail -n1)
