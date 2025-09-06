@@ -45,7 +45,9 @@ test -e /tmp/.del_$myhour || touch "/tmp/.del_$myhour"
   hostname=$(echo "$arch"|cut -d"_" -f1);
   timestamp=$(echo "$arch"|cut -d_ -f2-|cut -d"." -f1,2 |sed 's/_/ /g;s/\./:/g;s/$/:00/g');
   export RESTIC_HOST=$hostname
+  
   links=$(cat "$myhour/$arch"|gunzip | tee "$myhour/"${arch/\.gz/} |jq .content|sed 's/\\n/\n/g'|grep "<link"|sed 's/\\"//g'|sed 's/link href=/link>/g'|cut -d">" -f2|cut -d"<" -f1 |sed 's/?ref=rss\///g' |grep -v ^$|grep -e ^ftp:// -e ^https:// -e ^http:// )
+  
   md5sum "$myhour/"${arch/\.gz/} 
   grep 'content' "$myhour/"${arch/\.gz/} -q && (echo "$myhour/$arch" >> "/tmp/.del_$myhour")
   grep 'content' "$myhour/"${arch/\.gz/} -q &&  export SENT_SOMETHING=true
@@ -56,14 +58,14 @@ test -e /tmp/.del_$myhour || touch "/tmp/.del_$myhour"
   datestamp=$(date +%s -u -d "$timestamp")
   echo $timestamp " links: "$(echo "$links"|wc -l)
   ##                      batch n items for timestamp
-  echo "$links"| xargs -P 1 -n 22|while read list;do 
+  grep -q "window._cf_chl_opt.cOgUHash" "$myhour/"${arch/\.gz/} || { echo "$links"| xargs -P 1 -n 22|while read list;do 
     tsout='"ts": {';out='{"urls": [';for m in $list;do out="$out"'"'"$m"'",';tsout="$tsout"'"'"$m"'": '"$datestamp"',' ;done  
     jsonout=$(echo "$out"|sed 's/,$/],/g')$(echo "$tsout"|sed 's/,$/}/g')"}"  ;
     #echo "$jsonout"|jq . -c ;#echo "$jsonout"
     ( curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${jsonout}"|jq .res|grep -v -e '": 0' -e '":0' |grep -v -e ^$ -e '^}$' -e '^{$' |sed 's/^/ADDURL:/g'   ;echo ) & sleep 0.5
-  done
+  done ; } ;
   #test -e "$myhour/"${arch/\.gz/} && rm "$myhour/"${arch/\.gz/}
-
+  
 done;done
 timestamp=$(echo "$myhour" |sed 's/_/ /g;s/\./:/g;s/$/:59:59/g')
 datestamp=$(date +%s -u -d "$timestamp")
