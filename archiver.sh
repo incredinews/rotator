@@ -8,12 +8,14 @@
 [[ -z "$RESTSKY"  ]] && exit 1
 export RESTIC_PASSWORD="$RESTPASS"
 export RESTIC_FROM_PASSWORD="$RESTPASS"
-#[[ -z "$RESTSEC"  ]] && exit 1
 export RESTIC_REPOSITORY="$RESTURL";export AWS_SECRET_ACCESS_KEY="$RESTSKY";export AWS_ACCESS_KEY_ID="$RESTACK"
 export SECREADY=true
 [[ -z $SECRESTACK       ]] && export SECREADY=false
 [[ -z $SECRESTSKY       ]] && export SECREADY=false
 [[ -z $SECRESTURL ]] && export SECREADY=false
+
+#[[ -z "$RESTSEC"  ]] && exit 1
+  
 
 cd /tmp/
 test -e /tmp/feedarch||mkdir /tmp/feedarch
