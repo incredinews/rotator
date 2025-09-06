@@ -67,8 +67,9 @@ links=$( cat "$myhour/$arch"|gunzip | tee "$myhour/"${arch/\.gz/} |jq .content|s
     jsonout=$(echo "$out"|sed 's/,$/],/g')$(echo "$tsout"|sed 's/,$/}/g')"}"  ;
     #echo "$jsonout"|jq . -c ;#echo "$jsonout"
     ( curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${jsonout}"|jq .res|grep -v -e '": 0' -e '":0' |grep -v -e ^$ -e '^}$' -e '^{$' |sed 's/^/ADDURL:/g'   ;echo ) & sleep 0.5
-  )
-  done ; } ;
+  
+  done ) 
+echo -n ; } ;
   # end action 
   #test -e "$myhour/"${arch/\.gz/} && rm "$myhour/"${arch/\.gz/}
   
