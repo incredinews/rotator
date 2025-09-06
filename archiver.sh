@@ -45,7 +45,7 @@ test -e /tmp/.del_$myhour || touch "/tmp/.del_$myhour"
   hostname=$(echo "$arch"|cut -d"_" -f1);
   timestamp=$(echo "$arch"|cut -d_ -f2-|cut -d"." -f1,2 |sed 's/_/ /g;s/\./:/g;s/$/:00/g');
   export RESTIC_HOST=$hostname
-  links=$(cat "$myhour/$arch"|gunzip | tee "$myhour/"${arch/\.gz/} |jq .content|sed 's/\\n/\n/g'|grep "<link"|cut -d">" -f2|cut -d"<" -f1 )
+  links=$(cat "$myhour/$arch"|gunzip | tee "$myhour/"${arch/\.gz/} |jq .content|sed 's/\\n/\n/g'|grep "<link"|sed 's/\\"//g'|sed 's/link href=/link>/g'|cut -d">" -f2|cut -d"<" -f1 |sed 's/?ref=rss\///g' )
   md5sum "$myhour/"${arch/\.gz/} 
   grep 'content' "$myhour/"${arch/\.gz/} -q && (echo "$myhour/$arch" >> "/tmp/.del_$myhour")
   grep 'content' "$myhour/"${arch/\.gz/} -q &&  export SENT_SOMETHING=true
