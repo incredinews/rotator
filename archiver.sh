@@ -61,7 +61,7 @@ test -e "/tmp/urls.$feed"  || mkdir -p "/tmp/urls.$feed"
       [[ "$linksum" == "$lastcontentsum" ]]   && echo "DUPeL"
       if [ $(echo "$links"|grep "://"|wc -l ) -ge 5 ]; then
          [[ "$linksum" == "$lastcontentsum" ]]  && ( echo "$myhour/$arch" >> "/tmp/.del_$myhour") 
-         [[ "$filesum" == "$lastsum" ]]         && (echo "$myhour/$arch" >> "/tmp/.del_$myhour")  
+         [[ "$filesum" == "$lastsum" ]]         && ( echo "$myhour/$arch" >> "/tmp/.del_$myhour")  
       fi
   datestamp=$(date +%s -u -d "$timestamp")
   echo $timestamp " links: "$(echo "$links"|wc -l)
