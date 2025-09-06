@@ -49,13 +49,14 @@ test -e /tmp/.del_$myhour || touch "/tmp/.del_$myhour"
   hostname=$(echo "$arch"|cut -d"_" -f1);
   timestamp=$(echo "$arch"|cut -d_ -f2-|cut -d"." -f1,2 |sed 's/_/ /g;s/\./:/g;s/$/:00/g');
   export RESTIC_HOST=$hostname
-filesum=$( md5sum "$myhour/"${arch/\.gz/} |cut -d" " -f1)
-[[ -z "$filesum" ]]  && ( [[ "$filesum" = "$lastsum" ]]  ||  (echo "$myhour/$arch" >> "/tmp/.del_$myhour") )
-[[ "$filesum" = "$lastsum" ]]   && echo "DUPe"
 links=$( cat "$myhour/$arch"|gunzip | tee "$myhour/"${arch/\.gz/} |jq .content|sed 's/\\n/\n/g'|sed 's/<link><!\[CDATA\[/<link>/g'|sed 's/\]\]><\/link>/<\/link>/g'|grep "<link"|sed 's/\\"//g'|sed 's/link href=/link>/g'|cut -d">" -f2|cut -d"<" -f1 |sed 's/?ref=rss\///g' |grep -v ^$|grep -e ^ftp:// -e ^https:// -e ^http:// )
-[[ "$filesum" = "$lastsum" ]]  ||  grep -q "window._cf_chl_opt.cOgUHash" "$myhour/"${arch/\.gz/} || (echo "$links"|wc -l |grep -q -e ^0$ -e ^1$) ||  { 
+filesum=$( md5sum "$myhour/"${arch/\.gz/} |cut -d" " -f1)
+linksum=$( cat  "$myhour/"${arch/\.gz/} |  jq .content|md5sum|cut -d" " -f1)
+ [[ "$filesum" = "$lastsum" ]]  && echo "DUPe"
+ [[ "$filesum" = "$lastsum" ]]  && (echo "$myhour/$arch" >> "/tmp/.del_$myhour") 
+
+grep -q "window._cf_chl_opt.cOgUHash" "$myhour/"${arch/\.gz/} || (echo "$links"|wc -l |grep -q -e ^0$ -e ^1$) ||  { 
  
-  
   grep 'content' "$myhour/"${arch/\.gz/} -q && (echo "$myhour/$arch" >> "/tmp/.del_$myhour")
   grep 'content' "$myhour/"${arch/\.gz/} -q &&  export SENT_SOMETHING=true
   #mkfifo /tmp/rst.io &>/dev/null|| true 
@@ -65,11 +66,11 @@ links=$( cat "$myhour/$arch"|gunzip | tee "$myhour/"${arch/\.gz/} |jq .content|s
   datestamp=$(date +%s -u -d "$timestamp")
   echo $timestamp " links: "$(echo "$links"|wc -l)
   ##                      batch n items for timestamp
-  (echo "$arch" |grep -q ^5d25e83ff3270d5c3bb1d8603fde89f777fb) || ( echo "$links"| xargs -P 1 -n 22|while read list;do 
+  (echo "$arch" |grep -q ^5d25e83ff3270d5c3bb1d8603fde89f777fb) || ( echo "$links"| xargs -P 1 -n 44|while read list;do 
     tsout='"ts": {';out='{"urls": [';for m in $list;do out="$out"'"'"$m"'",';tsout="$tsout"'"'"$m"'": '"$datestamp"',' ;done 
     jsonout=$(echo "$out"|sed 's/,$/],/g')$(echo "$tsout"|sed 's/,$/}/g')"}"  ;
     #echo "$jsonout"|jq . -c ;#echo "$jsonout"
-    ( curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${jsonout}"|jq .res|grep -v -e '": 0' -e '":0' |grep -v -e ^$ -e '^}$' -e '^{$' |sed 's/^/ADDURL:/g'   ;echo ) & sleep 0.5
+    ( curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${jsonout}"|jq .res.status -c|grep -v -e '": 0' -e '":0' |grep -v -e ^$ -e '^}$' -e '^{$' |sed 's/^/ADDURL:/g'   ;echo ) & sleep 0.5
   
   done ) 
 echo -n ; } ;
@@ -100,9 +101,9 @@ BACKUP_OK=false
 cat /tmp/rst.io |sed 's/^/'"$myhour"'| PRI:/g' | tee /tmp/rst.out &
 restic copy --from-repo /tmp/restic &> /tmp/rst.io 
 wait
-grep "DONE" /tmp/rst.out && BACKUP_OK=true 
+grep "saved$" /tmp/rst.out && BACKUP_OK=true 
 echo "OK: $BACKUP_OK"
-#[[ "$BACKUP_OK" = "true" ]] && ( cmdlist=$(cat "/tmp/.del_$myhour" |sed 's/^/ rm /g;s/$/;/g') ; echo "COPY OK.. delete source "$(echo "$cmdlist"|grep rm |wc -l ) ;echo "open ""$DAVURL""feedarchive/;""$cmdlist"";quit" |lftp & cat "/tmp/.del_$myhour" |while read a ;do test -e "$a" && rm "$a"  ${a/\.gz/} ;done ;wait )   
+[[ "$BACKUP_OK" = "true" ]] && ( cmdlist=$(cat "/tmp/.del_$myhour" |sed 's/^/ rm /g;s/$/;/g') ; echo "COPY OK.. delete source "$(echo "$cmdlist"|grep rm |wc -l ) ;echo "open ""$DAVURL""feedarchive/;""$cmdlist"";quit" |lftp & cat "/tmp/.del_$myhour" |while read a ;do test -e "$a" && rm "$a"  ${a/\.gz/} ;done ;wait )   
 #rm -rf /tmp/restic
 test -e /tmp/restic || mkdir /tmp/restic
 restic -r /tmp/restic init|| true
