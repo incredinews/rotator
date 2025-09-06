@@ -47,7 +47,7 @@ test -e /tmp/.del_$myhour || touch "/tmp/.del_$myhour"
   export RESTIC_HOST=$hostname
   
   links=$(cat "$myhour/$arch"|gunzip | tee "$myhour/"${arch/\.gz/} |jq .content|sed 's/\\n/\n/g'|grep "<link"|sed 's/\\"//g'|sed 's/link href=/link>/g'|cut -d">" -f2|cut -d"<" -f1 |sed 's/?ref=rss\///g' |grep -v ^$|grep -e ^ftp:// -e ^https:// -e ^http:// )
- grep -q "window._cf_chl_opt.cOgUHash" "$myhour/"${arch/\.gz/} || { 
+ grep -q "window._cf_chl_opt.cOgUHash" "$myhour/"${arch/\.gz/} || (echo "$links"|wc -l |grep -q -e ^0$ -e ^1$) ||  { 
   md5sum "$myhour/"${arch/\.gz/} 
   grep 'content' "$myhour/"${arch/\.gz/} -q && (echo "$myhour/$arch" >> "/tmp/.del_$myhour")
   grep 'content' "$myhour/"${arch/\.gz/} -q &&  export SENT_SOMETHING=true
