@@ -83,13 +83,13 @@ mkfifo /tmp/rst.io &>/dev/null|| true
 sleep 2
 export RESTIC_REPOSITORY="$RESTURL";export AWS_SECRET_ACCESS_KEY="$RESTSKY";export AWS_ACCESS_KEY_ID="$RESTACK"
 BACKUP_OK=false
-cat /tmp/rst.io |sed 's/^/'"$myhour"'| PRI:/g' &
-restic copy --from-repo /tmp/restic &> /tmp/rst.io && BACKUP_OK=true 
+cat /tmp/rst.io |sed 's/^/'"$myhour"'| PRI:/g' | tee /tmp/rst.out &
+restic copy --from-repo /tmp/restic &> /tmp/rst.io 
 wait
-
-
-[[ "$BACKUP_OK" = "true" ]] && ( cmdlist=$(cat "/tmp/.del_$myhour" |sed 's/^/ rm /g;s/$/;/g') ; echo "COPY OK.. delete source "$(echo "$cmdlist"|grep rm |wc -l ) ;echo "open ""$DAVURL""feedarchive/;""$cmdlist"";quit" |lftp & cat "/tmp/.del_$myhour" |while read a ;do test -e "$a" && rm "$a"  ${a/\.gz/} ;done ;wait )   
-rm -rf /tmp/restic
+grep "DONE" /tmp/rst.out && && BACKUP_OK=true 
+echo "OK: $BACKUP_OK"
+#[[ "$BACKUP_OK" = "true" ]] && ( cmdlist=$(cat "/tmp/.del_$myhour" |sed 's/^/ rm /g;s/$/;/g') ; echo "COPY OK.. delete source "$(echo "$cmdlist"|grep rm |wc -l ) ;echo "open ""$DAVURL""feedarchive/;""$cmdlist"";quit" |lftp & cat "/tmp/.del_$myhour" |while read a ;do test -e "$a" && rm "$a"  ${a/\.gz/} ;done ;wait )   
+#rm -rf /tmp/restic
 test -e /tmp/restic || mkdir /tmp/restic
 restic -r /tmp/restic init|| true
   echo -n ; } ;
