@@ -86,7 +86,7 @@ BACKUP_OK=false
 cat /tmp/rst.io |sed 's/^/'"$myhour"'| PRI:/g' | tee /tmp/rst.out &
 restic copy --from-repo /tmp/restic &> /tmp/rst.io 
 wait
-grep "DONE" /tmp/rst.out && && BACKUP_OK=true 
+grep "DONE" /tmp/rst.out && BACKUP_OK=true 
 echo "OK: $BACKUP_OK"
 #[[ "$BACKUP_OK" = "true" ]] && ( cmdlist=$(cat "/tmp/.del_$myhour" |sed 's/^/ rm /g;s/$/;/g') ; echo "COPY OK.. delete source "$(echo "$cmdlist"|grep rm |wc -l ) ;echo "open ""$DAVURL""feedarchive/;""$cmdlist"";quit" |lftp & cat "/tmp/.del_$myhour" |while read a ;do test -e "$a" && rm "$a"  ${a/\.gz/} ;done ;wait )   
 #rm -rf /tmp/restic
