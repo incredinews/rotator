@@ -62,12 +62,14 @@ links=$( cat "$myhour/$arch"|gunzip | tee "$myhour/"${arch/\.gz/} |jq .content|s
   datestamp=$(date +%s -u -d "$timestamp")
   echo $timestamp " links: "$(echo "$links"|wc -l)
   ##                      batch n items for timestamp
-  echo "$links"| xargs -P 1 -n 22|while read list;do 
-    tsout='"ts": {';out='{"urls": [';for m in $list;do out="$out"'"'"$m"'",';tsout="$tsout"'"'"$m"'": '"$datestamp"',' ;done  
+  (echo "$arch" |grep -q ^5d25e83ff3270d5c3bb1d8603fde89f777fb) || ( echo "$links"| xargs -P 1 -n 22|while read list;do 
+    tsout='"ts": {';out='{"urls": [';for m in $list;do out="$out"'"'"$m"'",';tsout="$tsout"'"'"$m"'": '"$datestamp"',' ;done 
     jsonout=$(echo "$out"|sed 's/,$/],/g')$(echo "$tsout"|sed 's/,$/}/g')"}"  ;
     #echo "$jsonout"|jq . -c ;#echo "$jsonout"
     ( curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${jsonout}"|jq .res|grep -v -e '": 0' -e '":0' |grep -v -e ^$ -e '^}$' -e '^{$' |sed 's/^/ADDURL:/g'   ;echo ) & sleep 0.5
+  )
   done ; } ;
+  # end action 
   #test -e "$myhour/"${arch/\.gz/} && rm "$myhour/"${arch/\.gz/}
   
 done;done
