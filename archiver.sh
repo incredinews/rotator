@@ -108,9 +108,11 @@ echo "$TSURL"|grep -e "^//::1" -e "//127\.0\.0\.1" && export BATCHSIZE=99
   lotsout='"ts": {';loout='{"urls": [';
   hitsout='"ts": {';hiout='{"urls": [';
   hictr=0
+  
+  for elem in $sumlist;do 
   m=$(echo "$elem"|cut -d"/" -f2)
   feed=$(echo "$elem"|cut -d"/" -f1)
-  ( cat /tmp/urls.$feed/$m|grep -q -e ^http:// -e ^ftp:// -e ^redis:// -e ^rediss:// -e ^https:// -e ^dav:// -e ^davs:// -e ^smb:// -e ^s3:// ) && for elem in $sumlist;do 
+  ( cat /tmp/urls.$feed/$m|grep -q -e ^http:// -e ^ftp:// -e ^redis:// -e ^rediss:// -e ^https:// -e ^dav:// -e ^davs:// -e ^smb:// -e ^s3:// ) && (
   #echo $m
     loval=$(cat /tmp/seen.$feed/$m|sort -n |head -n1)
     hival=$(cat /tmp/seen.$feed/$m|sort -n |tail -n1)
@@ -119,7 +121,9 @@ echo "$TSURL"|grep -e "^//::1" -e "//127\.0\.0\.1" && export BATCHSIZE=99
      hiout="$hiout"'"'"$(cat /tmp/urls.$feed/$m)"'",';hitsout="$hitsout"'"'"$(cat /tmp/urls.$feed/$m)"'": '"$hival"',' ;
      hictr=$(( $hictr + 1 ))
     }
-  done 
+  )
+  done  
+
   lojsonout=$(echo "$loout"|sed 's/,$/],/g')$(echo "$lotsout"|sed 's/,$/}/g')"}"  ;
   hijsonout=$(echo "$hiout"|sed 's/,$/],/g')$(echo "$hitsout"|sed 's/,$/}/g')"}"  ;
   loctr=$(echo "$lojsonout"|jq -c .urls[] 2>/dev/null|wc -l  )
