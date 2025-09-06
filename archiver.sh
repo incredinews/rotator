@@ -39,16 +39,20 @@ time lftp -e "open ""$DAVURL""feedarchive/;mirror -c --parallel=3 $myhour ;quit"
 export SENT_SOMETHING=false
 export RESTIC_REPOSITORY=/tmp/restic
 for feed in $(ls "$myhour" -1|cut -d_ -f1|sort -u );do  
+lastsum=""
 test -e /tmp/.del_$myhour || touch "/tmp/.del_$myhour"
   for arch in $(ls "$myhour" -1|grep $feed|sort -n|grep gz);do 
-  echo  "                                 "$( ls -1 "$myhour/$arch")" "$(du -k "$myhour/$arch"|cut -d" " -f1)" K"
+  echo  "                 "$(du -k "$myhour/$arch"|cut -d" " -f1)
   hostname=$(echo "$arch"|cut -d"_" -f1);
   timestamp=$(echo "$arch"|cut -d_ -f2-|cut -d"." -f1,2 |sed 's/_/ /g;s/\./:/g;s/$/:00/g');
   export RESTIC_HOST=$hostname
+filesum=$( md5sum "$myhour/"${arch/\.gz/} |cut -d" " -f1)
+[[ -z "$filesum" ]]  && ( [[ "$filesum" = "$lastsum" ]]  ||  (echo "$myhour/$arch" >> "/tmp/.del_$myhour") )
+
+links=$( cat "$myhour/$arch"|gunzip | tee "$myhour/"${arch/\.gz/} |jq .content|sed 's/\\n/\n/g'|grep "<link"|sed 's/\\"//g'|sed 's/link href=/link>/g'|cut -d">" -f2|cut -d"<" -f1 |sed 's/?ref=rss\///g' |grep -v ^$|grep -e ^ftp:// -e ^https:// -e ^http:// )
+[[ "$filesum" = "$lastsum" ]]  ||  grep -q "window._cf_chl_opt.cOgUHash" "$myhour/"${arch/\.gz/} || (echo "$links"|wc -l |grep -q -e ^0$ -e ^1$) ||  { 
+ 
   
-  links=$(cat "$myhour/$arch"|gunzip | tee "$myhour/"${arch/\.gz/} |jq .content|sed 's/\\n/\n/g'|grep "<link"|sed 's/\\"//g'|sed 's/link href=/link>/g'|cut -d">" -f2|cut -d"<" -f1 |sed 's/?ref=rss\///g' |grep -v ^$|grep -e ^ftp:// -e ^https:// -e ^http:// )
- grep -q "window._cf_chl_opt.cOgUHash" "$myhour/"${arch/\.gz/} || (echo "$links"|wc -l |grep -q -e ^0$ -e ^1$) ||  { 
-  md5sum "$myhour/"${arch/\.gz/} 
   grep 'content' "$myhour/"${arch/\.gz/} -q && (echo "$myhour/$arch" >> "/tmp/.del_$myhour")
   grep 'content' "$myhour/"${arch/\.gz/} -q &&  export SENT_SOMETHING=true
   #mkfifo /tmp/rst.io &>/dev/null|| true 
