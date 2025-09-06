@@ -108,7 +108,7 @@ echo "$TSURL"|grep -e "^//::1" -e "//127\.0\.0\.1" && export BATCHSIZE=99
   lotsout='"ts": {';loout='{"urls": [';
   hitsout='"ts": {';hiout='{"urls": [';
   hictr=0
-  
+  echo $sumlist
   for elem in $sumlist;do 
   m=$(echo "$elem"|cut -d"/" -f2)
   feed=$(echo "$elem"|cut -d"/" -f1)
