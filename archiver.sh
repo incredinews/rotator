@@ -42,6 +42,7 @@ export SENT_SOMETHING=false
 export RESTIC_REPOSITORY=/tmp/restic
 for feed in $(ls "$myhour" -1|cut -d_ -f1|sort -u );do  
 lastsum=""
+lastcontentsum=""
 test -e /tmp/.del_$myhour || touch "/tmp/.del_$myhour"
   for arch in $(ls "$myhour" -1|grep $feed|sort -n|grep gz);do 
   echo  "                 "$(du -k "$myhour/$arch"|cut -d" " -f1)
@@ -50,7 +51,7 @@ test -e /tmp/.del_$myhour || touch "/tmp/.del_$myhour"
   export RESTIC_HOST=$hostname
 filesum=$( md5sum "$myhour/"${arch/\.gz/} |cut -d" " -f1)
 [[ -z "$filesum" ]]  && ( [[ "$filesum" = "$lastsum" ]]  ||  (echo "$myhour/$arch" >> "/tmp/.del_$myhour") )
-
+[[ "$filesum" = "$lastsum" ]]   && echo "DUPe"
 links=$( cat "$myhour/$arch"|gunzip | tee "$myhour/"${arch/\.gz/} |jq .content|sed 's/\\n/\n/g'|grep "<link"|sed 's/\\"//g'|sed 's/link href=/link>/g'|cut -d">" -f2|cut -d"<" -f1 |sed 's/?ref=rss\///g' |grep -v ^$|grep -e ^ftp:// -e ^https:// -e ^http:// )
 [[ "$filesum" = "$lastsum" ]]  ||  grep -q "window._cf_chl_opt.cOgUHash" "$myhour/"${arch/\.gz/} || (echo "$links"|wc -l |grep -q -e ^0$ -e ^1$) ||  { 
  
@@ -75,7 +76,9 @@ echo -n ; } ;
   # end action 
   #test -e "$myhour/"${arch/\.gz/} && rm "$myhour/"${arch/\.gz/}
   
-done;done
+done; ## archive level
+lastsum="$filesum"
+done ## feed level
 timestamp=$(echo "$myhour" |sed 's/_/ /g;s/\./:/g;s/$/:59:59/g')
 datestamp=$(date +%s -u -d "$timestamp")
 
