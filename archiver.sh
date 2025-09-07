@@ -52,7 +52,7 @@ test -e "/tmp/urls.$feed"  || mkdir -p "/tmp/urls.$feed"
       hostname=$(echo "$arch"|cut -d"_" -f1);
       timestamp=$(echo "$arch"|cut -d_ -f2-|cut -d"." -f1,2 |sed 's/_/ /g;s/\./:/g;s/$/:00/g');
       export RESTIC_HOST=$hostname
-      links=$( cat "$myhour/$arch"|gunzip | tee "$myhour/"${arch/\.gz/} |jq .content|sed 's/\\n/\n/g'|sed 's/<link><!\[CDATA\[/<link>/g'|sed 's/\]\]><\/link>/<\/link>/g'|grep "<link"|sed 's/\\"//g'|sed 's/link href=/link>/g'|sed 's/<link/\n<link/g'|grep link |cut -d">" -f2|cut -d"<" -f1 |sed 's/?ref=rss\///g' |grep -v ^$|grep -e ^ftp:// -e ^https:// -e ^http:// )
+      links=$( cat "$myhour/$arch"|gunzip | tee "$myhour/"${arch/\.gz/} |jq .content|sed 's/\\n/\n/g'|sed 's/<link><!\[CDATA\[/<link>/g'|sed 's/\]\]><\/link>/<\/link>/g'|grep "<link"|sed 's/\\"//g'|sed 's/link href=/link>/g'|sed 's/<link/\n<link/g'|grep link |cut -d">" -f2|cut -d"<" -f1 |sed 's/?ref=rss\///g'|sed 's/\.html rel=/.html\nrel=/g' |grep -v ^$|grep -e ^ftp:// -e ^https:// -e ^http:// )
       filesum=$( md5sum "$myhour/"${arch/\.gz/} |  cut -d" " -f1                    )
       linksum=$(   echo "$links" |sort -n |md5sum|cut -d" " -f1 )
       echo  "  ==>>>    "$(du -k "$myhour/$arch"|cut -d" " -f1)
@@ -152,16 +152,14 @@ echo "$TSURL"|grep -e "^//::1" -e "//127\.0\.0\.1" && export BATCHSIZE=99
 done  2>&1  )  2>&1 |sed 's/^/ADDURL:/g'   ;
 timestamp=$(echo "$myhour" |sed 's/_/ /g;s/\./:/g;s/$/:59:59/g')
 datestamp=$(date +%s -u -d "$timestamp")
-
-
-
+echo "DONE W SENDING .. snapsotting : $SENT_SOMETHING"
 [[ "$SENT_SOMETHING" == "true" ]] && { 
 sleep 5;
 mkfifo /tmp/rst.io &>/dev/null|| true 
 cat /tmp/rst.io |sed 's/^/'"$myhour"'| ADD:/g' &
 #echo restic backup --time "$timestamp" --host "$hostname" "$myhour/*.json
 #     restic backup --time "$timestamp" --host "byhour" $myhour/*.json &> /tmp/rst.io 
-restic backup --stdin-filename feeds_$myhour.tgz --time "$timestamp" --host "byhour_compressed" --stdin-from-command -- /bin/bash -c "tar cv $myhour/*.json | gzip --rsyncable -c "
+restic backup --stdin-filename feeds_$myhour.tgz --time "$timestamp" --host "byhour_compressed" --stdin-from-command -- /bin/bash -c "tar cv $myhour/*.json | gzip --rsyncable -c "  &> /tmp/rst.io 
 
 #  && ( echo "$myhour/$arch" >> "/tmp/.del_$myhour" )
 restic forget --keep-hourly 2 --prune 2>&1|grep -e byhost -e  json |grep -v ^$|sed 's/^/'"$myhour"'| /g'
