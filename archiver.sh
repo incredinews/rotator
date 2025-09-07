@@ -166,7 +166,7 @@ restic forget --keep-hourly 2 --prune 2>&1|grep -e byhost -e  json |grep -v ^$|s
 
 mkfifo /tmp/rst.io &>/dev/null|| true  
 
-[[ "$SECREADY" == "true" ]] && {  export RESTIC_REPOSITORY="$SECRESTURL";export AWS_SECRET_ACCESS_KEY="$SECRESTSKY";export AWS_ACCESS_KEY_ID="$SECRESTACK" ; restic copy --from-repo /tmp/restic &> /tmp/rst.log ;  cat /tmp/rst.log 2>&1|grep -v ^$|sed 's/^/'"$myhour"'| SEC:/g' ;   } &
+[[ "$SECREADY" == "true" ]] && {  echo CPY_SEC; export RESTIC_REPOSITORY="$SECRESTURL";export AWS_SECRET_ACCESS_KEY="$SECRESTSKY";export AWS_ACCESS_KEY_ID="$SECRESTACK" ; restic copy --from-repo /tmp/restic &> /tmp/rst.log ;  cat /tmp/rst.log 2>&1|grep -v ^$|sed 's/^/'"$myhour"'| SEC:/g' ;   } &
 sleep 2
 export RESTIC_REPOSITORY="$RESTURL";export AWS_SECRET_ACCESS_KEY="$RESTSKY";export AWS_ACCESS_KEY_ID="$RESTACK"
 BACKUP_OK=false
