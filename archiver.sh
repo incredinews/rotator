@@ -79,7 +79,7 @@ DO_ACTION=true
 grep -q "window._cf_chl_opt.cOgUHash" "$myhour/"${arch/\.gz/}  && DO_ACTION=false
 grep -q "Please enable JS and disable any ad blocker" "$myhour/"${arch/\.gz/}  && DO_ACTION=false
 
-(echo "$links"|wc -l |grep -q -e ^0$ -e ^1$) || DO_ACTION=false
+(echo "$links"|wc -l |grep -q -e ^0$ -e ^1$) && DO_ACTION=false
  echo will run: "$DO_ACTION"
  [[ "$DO_ACTION" == "true" ]] && { 
  echo "+--+"
