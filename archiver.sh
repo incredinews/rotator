@@ -160,7 +160,9 @@ sleep 5;
 mkfifo /tmp/rst.io &>/dev/null|| true 
 cat /tmp/rst.io |sed 's/^/'"$myhour"'| ADD:/g' &
 #echo restic backup --time "$timestamp" --host "$hostname" "$myhour/*.json
-     restic backup --time "$timestamp" --host "byhour" $myhour/*.json &> /tmp/rst.io 
+#     restic backup --time "$timestamp" --host "byhour" $myhour/*.json &> /tmp/rst.io 
+restic backup --stdin-filename feeds_$myhour.tgz --time "$timestamp" --host "byhour_compressed" --stdin-from-command -- /bin/bash -c "tar cv $myhour/*.json | gzip --rsyncable -c "
+
 #  && ( echo "$myhour/$arch" >> "/tmp/.del_$myhour" )
 restic forget --keep-hourly 2 --prune 2>&1|grep -e byhost -e  json |grep -v ^$|sed 's/^/'"$myhour"'| /g'
 
