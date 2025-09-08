@@ -198,7 +198,16 @@ wait
 #cat /tmp/rst.out 2>&1|grep -v ^$|sed 's/^/'"$myhour"'| BCK:/g'
 
 echo "PRI_OK: $BACKUP_OK"
-[[ "$BACKUP_OK" == "true" ]] && ( cmdlist=$(cat "/tmp/.del_$myhour" |sed 's/^/ rm /g;s/$/;/g') ; echo "COPY OK.. delete source "$(echo "$cmdlist"|grep rm |wc -l ) ;echo "open ""$DAVURL""feedarchive/;""$cmdlist"";quit" |lftp & cat "/tmp/.del_$myhour" |while read a ;do test -e "$a" && rm "$a"  ${a/\.gz/} ;done ;wait )   
+[[ "$BACKUP_OK" == "true" ]] && ( 
+  ## clean up source
+  echo "cleanup.. $myhour"
+   #cmdlist=$(cat "/tmp/.del_$myhour" |sed 's/^/ rm /g;s/$/;/g') ; 
+   echo "COPY OK.. delete source "$(echo "$cmdlist"|grep rm |wc -l ) ;
+   cmdlist=$( cat "/tmp/.del_$myhour" | xargs -P 1 -n 96 |sed 's/^/ rm /g;s/$/;/g' )
+       echo "open ""$DAVURL""feedarchive/ ;""$cmdlist"" quit" |lftp &
+   cat "/tmp/.del_$myhour" |while read a ;do test -e "$a" && rm "$a"  ${a/\.gz/} & sleep 0.01;done ;
+   wait 
+)   
 
 #rm -rf /tmp/restic
 
