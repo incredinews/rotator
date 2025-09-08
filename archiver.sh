@@ -178,7 +178,7 @@ timestamp=$(echo "$myhour" |sed 's/_/ /g;s/\./:/g;s/$/:59:59/g')
 datestamp=$(date +%s -u -d "$timestamp")
 echo "DONE W SENDING .. snapshotting : $SENT_SOMETHING"
 [[ "$SENT_SOMETHING" == "true" ]] && { 
-sleep 5;
+sleep 2;
 mkfifo /tmp/rst.io &>/dev/null|| true 
 
 cat /tmp/rst.io |sed 's/^/'"$myhour"'| ADD:/g' &
