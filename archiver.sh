@@ -170,13 +170,13 @@ restic forget --keep-hourly 2 --prune 2>&1|grep -e byhost -e  json |grep -v ^$|s
 sleep 2
 export RESTIC_REPOSITORY="$RESTURL";export AWS_SECRET_ACCESS_KEY="$RESTSKY";export AWS_ACCESS_KEY_ID="$RESTACK"
 BACKUP_OK=false
-cat /tmp/rst.io |sed 's/^/'"$myhour"'| PRI:/g' | tee /tmp/rst.out &
+#cat /tmp/rst.io |sed 's/^/'"$myhour"'| PRI:/g' | tee /tmp/rst.out &
 export |grep RESTIC|grep -v PASSWO
 echo 'restic copy -r "$RESTURL" --from-repo /tmp/restic &> /tmp/rst.io'
-      restic copy -r "$RESTURL" --from-repo /tmp/restic &> /tmp/rst.io 
+      restic copy -r "$RESTURL" --from-repo /tmp/restic 2>&1 | tee /tmp/rstpri.log | sed 's/^/'"$myhour"'| PRI:/g' 
 wait
-grep "saved$" /tmp/rst.out && BACKUP_OK=true 
-cat /tmp/rst.out 2>&1|grep -v ^$|sed 's/^/'"$myhour"'| BCK:/g'
+grep "saved$" /tmp/rstpri.log && BACKUP_OK=true 
+#cat /tmp/rst.out 2>&1|grep -v ^$|sed 's/^/'"$myhour"'| BCK:/g'
 
 echo "OK: $BACKUP_OK"
 [[ "$BACKUP_OK" == "true" ]] && ( cmdlist=$(cat "/tmp/.del_$myhour" |sed 's/^/ rm /g;s/$/;/g') ; echo "COPY OK.. delete source "$(echo "$cmdlist"|grep rm |wc -l ) ;echo "open ""$DAVURL""feedarchive/;""$cmdlist"";quit" |lftp & cat "/tmp/.del_$myhour" |while read a ;do test -e "$a" && rm "$a"  ${a/\.gz/} ;done ;wait )   
