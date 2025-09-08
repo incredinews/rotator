@@ -47,8 +47,8 @@ export RESTIC_REPOSITORY=/tmp/restic_$myhour
 for feed in $(ls "$myhour" -1|cut -d_ -f1|sort -u );do  
 lastsum=""
 lastcontentsum=""
-test -e "/tmp/rststatus/seen.$feed" && rm -rf "/tmp/rststatus/seen.$feed"
-test -e "/tmp/rststatus/urls.$feed" && rm -rf "/tmp/rststatus/urls.$feed"
+#test -e "/tmp/rststatus/seen.$feed" && rm -rf "/tmp/rststatus/seen.$feed"
+#test -e "/tmp/rststatus/urls.$feed" && rm -rf "/tmp/rststatus/urls.$feed"
 test -e "/tmp/rststatus/seen.$feed"  || mkdir -p "/tmp/rststatus/seen.$feed" 
 test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed" 
   test -e /tmp/.del_$myhour || touch "/tmp/.del_$myhour"
@@ -207,7 +207,7 @@ echo "PRI_OK: $BACKUP_OK"
    echo "COPY OK.. delete source "$(echo "$cmdlist"|grep rm |wc -l ) ;
    cmdlist=$( cat "/tmp/.del_$myhour" | xargs -P 1 -n 96 |sed 's/^/ rm /g;s/$/;/g' )
    time (echo "open ""$DAVURL""feedarchive/ ;""$cmdlist"" quit" |lftp  2>&1 |grep -v "Access failed: 404 Not Found" ) &
-   cat "/tmp/.del_$myhour" |while read a ;do test -e "$a" && rm "$a"  ${a/\.gz/} & sleep 0.01;done &
+   cat "/tmp/.del_$myhour" |grep -v -e /tmp/rststatus.seen -e /tmp/rststatus.urls |while read a ;do test -e "$a" && rm "$a"  ${a/\.gz/} & sleep 0.01;done &
    wait 
 )   
 
