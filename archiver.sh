@@ -13,7 +13,7 @@ export SECREADY=true
 [[ -z $SECRESTACK       ]] && export SECREADY=false
 [[ -z $SECRESTSKY       ]] && export SECREADY=false
 [[ -z $SECRESTURL ]] && export SECREADY=false
-
+mkdir -p /tmp/rststatus/
 #[[ -z "$RESTSEC"  ]] && exit 1
   
 
@@ -43,10 +43,10 @@ export RESTIC_REPOSITORY=/tmp/restic
 for feed in $(ls "$myhour" -1|cut -d_ -f1|sort -u );do  
 lastsum=""
 lastcontentsum=""
-test -e "/tmp/seen.$feed" && rm -rf "/tmp/seen.$feed"
-test -e "/tmp/urls.$feed" && rm -rf "/tmp/urls.$feed"
-test -e "/tmp/seen.$feed"  || mkdir -p "/tmp/seen.$feed" 
-test -e "/tmp/urls.$feed"  || mkdir -p "/tmp/urls.$feed" 
+test -e "/tmp/rststatus/seen.$feed" && rm -rf "/tmp/rststatus/seen.$feed"
+test -e "/tmp/rststatus/urls.$feed" && rm -rf "/tmp/rststatus/urls.$feed"
+test -e "/tmp/rststatus/seen.$feed"  || mkdir -p "/tmp/rststatus/seen.$feed" 
+test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed" 
   test -e /tmp/.del_$myhour || touch "/tmp/.del_$myhour"
   for arch in $(ls "$myhour" -1|grep $feed|sort -n|grep gz);do
       hostname=$(echo "$arch"|cut -d"_" -f1);
@@ -67,10 +67,10 @@ test -e "/tmp/urls.$feed"  || mkdir -p "/tmp/urls.$feed"
   echo -n $timestamp " links: "$(echo "$links"|wc -l)
   echo "$links" |while read link;do 
    curlinksum=$(echo "$link"|sha256sum|cut -d" " -f1)
-   test -e "/tmp/urls.$feed"  || mkdir -p "/tmp/urls.$feed" 
-   test -e "/tmp/seen.$feed"  || mkdir -p "/tmp/seen.$feed" 
-    echo "$datestamp"                     >> "/tmp/seen.$feed/$curlinksum"
-    test -e "/tmp/urls.$feed/$curlinksum" ||  echo "$link" > "/tmp/urls.$feed/$curlinksum"
+   test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed" 
+   test -e "/tmp/rststatus/seen.$feed"  || mkdir -p "/tmp/rststatus/seen.$feed" 
+    echo "$datestamp"                     >> "/tmp/rststatus/seen.$feed/$curlinksum"
+    test -e "/tmp/rststatus/urls.$feed/$curlinksum" ||  echo "$link" > "/tmp/rststatus/urls.$feed/$curlinksum"
     echo -n "+"
   done
   echo  
@@ -81,10 +81,10 @@ grep -q "Please enable JS and disable any ad blocker" "$myhour/"${arch/\.gz/}  &
 
 (echo "$links"|wc -l |grep -q -e ^0$ -e ^1$) && DO_ACTION=false
  #echo will run: "$DO_ACTION"
- [[ "$DO_ACTION" == "true" ]] && { 
+[[ "$DO_ACTION" == "true" ]] && { 
  echo -n "+-<>-+"
   grep 'content' "$myhour/"${arch/\.gz/} -q && (echo "$myhour/$arch" >> "/tmp/.del_$myhour")
-  grep 'content' "$myhour/"${arch/\.gz/} -q &&  export SENT_SOMETHING=true
+  grep 'content' "$myhour/"${arch/\.gz/} -q && export SENT_SOMETHING=true
   #mkfifo /tmp/rst.io &>/dev/null|| true 
   #cat /tmp/rst.io |sed 's/^/'"$myhour"'| ADD:/g' &
   ##echo restic backup --time "$timestamp" --host "$hostname" "$myhour/"${arch/\.gz/} 
@@ -104,7 +104,7 @@ done ## feed level
 BATCHSIZE=44
 echo "$TSURL"|grep -e "^//::1" -e "//127\.0\.0\.1" && export BATCHSIZE=99
 #(echo "$arch" |grep -q ^5d25e83ff3270d5c3bb1d8603fde89f777fb) || ( echo "$links"| xargs -P 1 -n 44|while read list;do 
-( for feed in $(ls "$myhour" -1|cut -d_ -f1|sort -u );do  ls -1 "/tmp/urls.$feed/" |while read n;do test -e /tmp/seen.$feed/$n && echo $feed/$n;done;done| xargs -P 1 -n $BATCHSIZE |while read sumlist;do 
+( for feed in $(ls "$myhour" -1|cut -d_ -f1|sort -u );do  ls -1 "/tmp/rststatus/urls.$feed/" |while read n;do test -e /tmp/rststatus/seen.$feed/$n && echo $feed/$n;done;done| xargs -P 1 -n $BATCHSIZE |while read sumlist;do 
   lotsout='"ts": {';loout='{"urls": [';
   hitsout='"ts": {';hiout='{"urls": [';
   hictr=0
@@ -112,20 +112,20 @@ echo "$TSURL"|grep -e "^//::1" -e "//127\.0\.0\.1" && export BATCHSIZE=99
   for elem in $sumlist;do 
   m=$(echo "$elem"|cut -d"/" -f2)
   feed=$(echo "$elem"|cut -d"/" -f1)
-   #cat /tmp/urls.$feed/$m
-  #( cat /tmp/urls.$feed/$m|grep -q -e ^http:// -e ^ftp:// -e ^redis:// -e ^rediss:// -e ^https:// -e ^dav:// -e ^davs:// -e ^smb:// -e ^s3:// ) || cat /tmp/urls.$feed/$m
+   #cat /tmp/rststatus/urls.$feed/$m
+  #( cat /tmp/rststatus/urls.$feed/$m|grep -q -e ^http:// -e ^ftp:// -e ^redis:// -e ^rediss:// -e ^https:// -e ^dav:// -e ^davs:// -e ^smb:// -e ^s3:// ) || cat /tmp/rststatus/urls.$feed/$m
    
    FEEDOK=true
-   cat /tmp/urls.$feed/$m|grep "and a sneak peek of Jetpa" && FEEDOK=false
+   cat /tmp/rststatus/urls.$feed/$m|grep "and a sneak peek of Jetpa" && FEEDOK=false
 
-  [[ "$FEEDOK" == "true" ]] && (cat /tmp/urls.$feed/$m |grep  -q -e "^http://" -e "^ftp://" -e "^redis://" -e "^rediss://" -e "^https://" -e "^dav://" -e "^davs://" -e "^smb://" -e "^s3://") && {
+  [[ "$FEEDOK" == "true" ]] && (cat /tmp/rststatus/urls.$feed/$m |grep  -q -e "^http://" -e "^ftp://" -e "^redis://" -e "^rediss://" -e "^https://" -e "^dav://" -e "^davs://" -e "^smb://" -e "^s3://") && {
   #echo found $m
-    loval=$(cat /tmp/seen.$feed/$m|sort -n |head -n1)
-    hival=$(cat /tmp/seen.$feed/$m|sort -n |tail -n1)
+    loval=$(cat /tmp/rststatus/seen.$feed/$m|sort -n |head -n1)
+    hival=$(cat /tmp/rststatus/seen.$feed/$m|sort -n |tail -n1)
   #echo $loval $hival
-     loout="$loout"'"'"$(cat /tmp/urls.$feed/$m)"'",';lotsout="$lotsout"'"'"$(cat /tmp/urls.$feed/$m)"'": '"$loval"',' ;
+     loout="$loout"'"'"$(cat /tmp/rststatus/urls.$feed/$m)"'",';lotsout="$lotsout"'"'"$(cat /tmp/rststatus/urls.$feed/$m)"'": '"$loval"',' ;
     [[ "$loval" == "$hival" ]] || {
-     hiout="$hiout"'"'"$(cat /tmp/urls.$feed/$m)"'",';hitsout="$hitsout"'"'"$(cat /tmp/urls.$feed/$m)"'": '"$hival"',' ;
+     hiout="$hiout"'"'"$(cat /tmp/rststatus/urls.$feed/$m)"'",';hitsout="$hitsout"'"'"$(cat /tmp/rststatus/urls.$feed/$m)"'": '"$hival"',' ;
      hictr=$(( $hictr + 1 ))
     }
   echo -n ; } ; 
@@ -197,6 +197,7 @@ echo -n ; } ;
 test -e "/tmp/.del_$myhour" && rm "/tmp/.del_$myhour"
 echo "############# next round ############"
 done
+## end hour
 
 export RESTIC_REPOSITORY="$RESTURL";export AWS_SECRET_ACCESS_KEY="$RESTSKY";export AWS_ACCESS_KEY_ID="$RESTACK"
 restic forget --keep-hourly 3 --prune 2>&1|grep -v ^$|sed 's/^/'"$myhour"'| PRI:/g'
