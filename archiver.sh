@@ -9,7 +9,7 @@ echo PING |nc 127.0.0.1 6379|grep -q PONG || exit 1
 [[ -z "$TSURL"    ]] && exit 1
 [[ -z "$RESTACK"  ]] && exit 1
 [[ -z "$RESTSKY"  ]] && exit 1
-
+export TIMEFORMAT=%R" s"
 redis_read() {
   echo get "$1" |nc 127.0.0.1 6379|tail -n+2
 }
@@ -100,9 +100,9 @@ test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed"
     #echo "$redcmd"|tr -d '\n' | nc 127.0.0.1 6379 2>&1 |grep -v '+OK' &
     [[ $(echo "$redcmd"|wc -c ) -ge 65000 ]] && { time (echo "$redcmd"|tr -d '\n' | nc 127.0.0.1 6379 2>&1 |grep -v '+OK')  & redcmd="MSET "  ; } ; 
     test -e               "/tmp/rststatus/urls.$feed/$curlinksum"             ||  ( echo "$link"        > "/tmp/rststatus/urls.$feed/$curlinksum"  &&     echo -n "L" ) &
-    sleep 0.005
+    sleep 0.0005
   done 
-  time (echo "$redcmd"|tr -d '\n' | nc 127.0.0.1 6379 2>&1 |grep -v '+OK') &
+  [[ "$redcmd" = "MSET " ]] || time (echo "$redcmd"|tr -d '\n' | nc 127.0.0.1 6379 2>&1 |grep -v '+OK') &
   wait
   echo  
 
