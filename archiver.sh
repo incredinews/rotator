@@ -143,7 +143,9 @@ echo "$TSURL"|grep -e "^//::1" -e "//127\.0\.0\.1" && export BATCHSIZE=99
   lojsonout=$(echo "$loout"|sed 's/,$/],/g')$(echo "$lotsout"|sed 's/,$/}/g')"}"  ;
   hijsonout=$(echo "$hiout"|sed 's/,$/],/g')$(echo "$hitsout"|sed 's/,$/}/g')"}"  ;
   loctr=$(echo "$lojsonout"|jq -c .urls[] 2>/dev/null|wc -l  )
-  echo "GOT LIST of":$(echo "$sumlist"|wc -w)" ↓ "$loctr" ↓ | ↑ "$hictr" ↑"
+  listmsg=$(echo "GOT LIST of":$(echo "$sumlist"|wc -w)" ↓ "$loctr" ↓ | ↑ "$hictr" ↑" )
+  echo "$listmsg"  |grep -q  '↓ 0 ↓ | ↑ 0 ↑ ' && echo "."
+  echo "$listmsg"  |grep -q  '↓ 0 ↓ | ↑ 0 ↑ ' || echo "$listmsg"
   #echo "$jsonout"|jq . -c ;#echo "$jsonout"
   #echo "JSON: $hijsonout"
   #echo "$loctr"| grep -q ^0$ || ( curlres=$(curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${lojsonout}" );echo "$curlres"|jq . &>/dev/null || echo "$curlres";echo "$curlres"|jq .|grep -q "null" && echo "$curlres";echo "$curlres"|jq .res -c|grep -q "null"|| (echo "$curlres"|jq .res -c|grep -v -e '": 0' -e '":0' |grep -v -e ^$ -e '^}$' -e '^{$' );echo ) |grep -v ^$ & 
