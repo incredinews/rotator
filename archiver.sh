@@ -172,7 +172,7 @@ export RESTIC_REPOSITORY="$RESTURL";export AWS_SECRET_ACCESS_KEY="$RESTSKY";expo
 BACKUP_OK=false
 #cat /tmp/rst.io |sed 's/^/'"$myhour"'| PRI:/g' | tee /tmp/rst.out &
 export |grep RESTIC|grep -v PASSWO
-echo 'restic copy -r "$RESTURL" --from-repo /tmp/restic &> /tmp/rst.io'
+echo 'restic copy -r "$RESTURL" --from-repo /tmp/restic '
       restic copy -r "$RESTURL" --from-repo /tmp/restic 2>&1 | tee /tmp/rstpri.log | sed 's/^/'"$myhour"'| PRI:/g' 
 wait
 grep "saved$" /tmp/rstpri.log && BACKUP_OK=true 
