@@ -67,14 +67,16 @@ test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed"
       fi
   datestamp=$(date +%s -u -d "$timestamp")
   echo -n $timestamp " links: "$(echo "$links"|wc -l)
-  echo "$links" |while read link;do 
+  test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed" 
+  test -e "/tmp/rststatus/seen.$feed"  || mkdir -p "/tmp/rststatus/seen.$feed" 
+  for link in $links;do 
+  #echo "$links" |while read link;do 
    curlinksum=$(echo "$link"|sha256sum|cut -d" " -f1)
-   test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed" 
-   test -e "/tmp/rststatus/seen.$feed"  || mkdir -p "/tmp/rststatus/seen.$feed" 
-    echo "$datestamp"                     >> "/tmp/rststatus/seen.$feed/$curlinksum"
-    test -e "/tmp/rststatus/urls.$feed/$curlinksum" ||  echo "$link" > "/tmp/rststatus/urls.$feed/$curlinksum"
-    echo -n "+"
-  done
+    grep -q "^$datestamp" "/tmp/rststatus/seen.$feed/$curlinksum" ||  ( echo "$datestamp"  >> "/tmp/rststatus/seen.$feed/$curlinksum" ) &
+    test -e               "/tmp/rststatus/urls.$feed/$curlinksum" ||  ( echo "$link"        > "/tmp/rststatus/urls.$feed/$curlinksum" &&     echo -n "+" ) &
+    sleep 0.02
+  done 
+  wait
   echo  
 
 DO_ACTION=true
