@@ -82,7 +82,7 @@ grep -q "Please enable JS and disable any ad blocker" "$myhour/"${arch/\.gz/}  &
 (echo "$links"|wc -l |grep -q -e ^0$ -e ^1$) && DO_ACTION=false
  #echo will run: "$DO_ACTION"
  [[ "$DO_ACTION" == "true" ]] && { 
- echo "+--+"
+ echo -n "+-<>-+"
   grep 'content' "$myhour/"${arch/\.gz/} -q && (echo "$myhour/$arch" >> "/tmp/.del_$myhour")
   grep 'content' "$myhour/"${arch/\.gz/} -q &&  export SENT_SOMETHING=true
   #mkfifo /tmp/rst.io &>/dev/null|| true 
