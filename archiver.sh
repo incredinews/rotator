@@ -111,8 +111,12 @@ echo "#### send #### "
 ####                      batch n items for timestamp
 BATCHSIZE=44
 echo "$TSURL"|grep -e "^//::1" -e "//127\.0\.0\.1" && export BATCHSIZE=256
+echo "BATCHSIZE=$BATCHSIZE"
+
 #(echo "$arch" |grep -q ^5d25e83ff3270d5c3bb1d8603fde89f777fb) || ( echo "$links"| xargs -P 1 -n 44|while read list;do 
-fullist=$(( for feed in $(ls "$myhour" -1|cut -d_ -f1|sort -u );do  ls -1 "/tmp/rststatus/urls.$feed/" |while read n;do test -e /tmp/rststatus/seen.$feed/$n && echo $feed/$n;done;done)
+
+fullist=$( echo -n;( for feed in $(ls "$myhour" -1|cut -d_ -f1|sort -u );do  ls -1 "/tmp/rststatus/urls.$feed/" |while read n;do test -e /tmp/rststatus/seen.$feed/$n && echo $feed/$n;done;done)
+
 echo "PROCESSING LINKS:"$(echo "$fullist"|wc -l )
 echo "$fullist"| xargs -P 1 -n $BATCHSIZE |while read sumlist;do 
   lotsout='"ts": {';loout='{"urls": [';
