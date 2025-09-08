@@ -64,7 +64,7 @@ test -e "/tmp/urls.$feed"  || mkdir -p "/tmp/urls.$feed"
          [[ "$filesum" == "$lastsum" ]]         && ( echo "$myhour/$arch" >> "/tmp/.del_$myhour")  
       fi
   datestamp=$(date +%s -u -d "$timestamp")
-  echo $timestamp " links: "$(echo "$links"|wc -l)
+  echo -n $timestamp " links: "$(echo "$links"|wc -l)
   echo "$links" |while read link;do 
    curlinksum=$(echo "$link"|sha256sum|cut -d" " -f1)
    test -e "/tmp/urls.$feed"  || mkdir -p "/tmp/urls.$feed" 
@@ -149,7 +149,7 @@ echo "$TSURL"|grep -e "^//::1" -e "//127\.0\.0\.1" && export BATCHSIZE=99
   (echo "$hictr"|grep -q ^0$) || ( echo -n "↑..." ;curlres=$(curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${hijsonout}" 2>&1  );(echo "$curlres";echo ) |grep -v ^$ ) & 
   (echo "$hictr"|grep -q ^0$) || ( curlres=$(curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${hijsonout}" ); echo "$curlres";echo ) |grep -v ^$  & 
   [[ "$hictr" == 0 ]] || sleep 0.3
-done  2>&1  )  2>&1 |sed 's/^/ADDURL:/g'   ;
+done  2>&1  )  2>&1 |sed 's/^/ADDURL:/g'  |grep -v "^ADDURL:$" ;
 timestamp=$(echo "$myhour" |sed 's/_/ /g;s/\./:/g;s/$/:59:59/g')
 datestamp=$(date +%s -u -d "$timestamp")
 echo "DONE W SENDING .. snapsotting : $SENT_SOMETHING"
