@@ -156,6 +156,7 @@ echo "DONE W SENDING .. snapsotting : $SENT_SOMETHING"
 [[ "$SENT_SOMETHING" == "true" ]] && { 
 sleep 5;
 mkfifo /tmp/rst.io &>/dev/null|| true 
+
 cat /tmp/rst.io |sed 's/^/'"$myhour"'| ADD:/g' &
 #echo restic backup --time "$timestamp" --host "$hostname" "$myhour/*.json
 #     restic backup --time "$timestamp" --host "byhour" $myhour/*.json &> /tmp/rst.io 
@@ -164,7 +165,6 @@ cat /tmp/rst.io |sed 's/^/'"$myhour"'| ADD:/g' &
 #  && ( echo "$myhour/$arch" >> "/tmp/.del_$myhour" )
 restic forget --keep-hourly 2 --prune 2>&1|grep -e byhost -e  json |grep -v ^$|sed 's/^/'"$myhour"'| /g' 2>&1 ) > /tmp/rst.io 
 
-mkfifo /tmp/rst.io &>/dev/null || true  
 
 [[ "$SECREADY" == "true" ]] && {  echo CPY_SEC; export RESTIC_REPOSITORY="$SECRESTURL";export AWS_SECRET_ACCESS_KEY="$SECRESTSKY";export AWS_ACCESS_KEY_ID="$SECRESTACK" ; restic copy -r "$SECRESTURL" --from-repo /tmp/restic &> /tmp/rstsec.log ;  cat /tmp/rstsec.log 2>&1|grep -v ^$|sed 's/^/'"$myhour"'| SEC:/g' ;   } &
 sleep 2
@@ -172,7 +172,8 @@ export RESTIC_REPOSITORY="$RESTURL";export AWS_SECRET_ACCESS_KEY="$RESTSKY";expo
 BACKUP_OK=false
 cat /tmp/rst.io |sed 's/^/'"$myhour"'| PRI:/g' | tee /tmp/rst.out &
 export |grep RESTIC|grep -v PASSWO
-restic copy -r "$RESTURL" --from-repo /tmp/restic &> /tmp/rst.io 
+echo 'restic copy -r "$RESTURL" --from-repo /tmp/restic &> /tmp/rst.io'
+      restic copy -r "$RESTURL" --from-repo /tmp/restic &> /tmp/rst.io 
 wait
 grep "saved$" /tmp/rst.out && BACKUP_OK=true 
 cat /tmp/rst.out 2>&1|grep -v ^$|sed 's/^/'"$myhour"'| BCK:/g'
