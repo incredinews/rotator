@@ -52,7 +52,7 @@ test -e "/tmp/urls.$feed"  || mkdir -p "/tmp/urls.$feed"
       hostname=$(echo "$arch"|cut -d"_" -f1);
       timestamp=$(echo "$arch"|cut -d_ -f2-|cut -d"." -f1,2 |sed 's/_/ /g;s/\./:/g;s/$/:00/g');
       export RESTIC_HOST=$hostname
-      links=$( cat "$myhour/$arch"|gunzip | tee "$myhour/"${arch/\.gz/} |jq .content|sed 's/\\n/\n/g'|sed 's/<link><!\[CDATA\[/<link>/g'|sed 's/\]\]><\/link>/<\/link>/g'|grep "<link"|sed 's/\\"//g'|sed 's/link href=/link>/g'|sed 's/<link/\n<link/g'|grep link |cut -d">" -f2|cut -d"<" -f1 |sed 's/?ref=rss\///g'|sed 's/\.html rel=/.html\nrel=/g' |grep -v ^$|grep -e ^ftp:// -e ^https:// -e ^http:// )
+      links=$( cat "$myhour/$arch"|gunzip | tee "$myhour/"${arch/\.gz/} |jq .content|sed 's/\\n/\n/g'|sed 's/<link><!\[CDATA\[/<link>/g'|sed 's/\]\]><\/link>/<\/link>/g'|grep "<link"|sed 's/\\"//g'|sed 's/link href=/link>/g'|sed 's/<link/\n<link/g'|grep link |cut -d">" -f2|cut -d"<" -f1 |sed 's/?ref=rss\///g'|sed 's/\.html rel=/.html\nrel=/g'|sed 's/#ftag=[A-Za-z0-9]\+$//g' |grep -v ^$|grep -e ^ftp:// -e ^https:// -e ^http:// )
       filesum=$( md5sum "$myhour/"${arch/\.gz/} |  cut -d" " -f1                    )
       linksum=$(   echo "$links" |sort -n |md5sum|cut -d" " -f1 )
       echo  "  ==>>>    "$(du -k "$myhour/$arch"|cut -d" " -f1)
@@ -171,6 +171,7 @@ sleep 2
 export RESTIC_REPOSITORY="$RESTURL";export AWS_SECRET_ACCESS_KEY="$RESTSKY";export AWS_ACCESS_KEY_ID="$RESTACK"
 BACKUP_OK=false
 cat /tmp/rst.io |sed 's/^/'"$myhour"'| PRI:/g' | tee /tmp/rst.out &
+export |grep RESTIC|grep -v PASSWO
 restic copy --from-repo /tmp/restic &> /tmp/rst.io 
 wait
 grep "saved$" /tmp/rst.out && BACKUP_OK=true 
