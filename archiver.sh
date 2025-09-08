@@ -173,7 +173,7 @@ cat /tmp/fullist.$myhour | xargs -P 1 -n $BATCHSIZE |while read sumlist;do
 done  2>&1  )  2>&1 |sed 's/^/ADDURL:/g'  |grep -v "^ADDURL:$" ;
 timestamp=$(echo "$myhour" |sed 's/_/ /g;s/\./:/g;s/$/:59:59/g')
 datestamp=$(date +%s -u -d "$timestamp")
-echo "DONE W SENDING .. snapsotting : $SENT_SOMETHING"
+echo "DONE W SENDING .. snapshotting : $SENT_SOMETHING"
 [[ "$SENT_SOMETHING" == "true" ]] && { 
 sleep 5;
 mkfifo /tmp/rst.io &>/dev/null|| true 
