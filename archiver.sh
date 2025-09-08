@@ -242,11 +242,11 @@ echo "PRI_OK: $BACKUP_OK"
   ## clean up source
   echo "cleanup.. $myhour"
    #cmdlist=$(cat "/tmp/.del_$myhour" |sed 's/^/ rm /g;s/$/;/g') ; 
-   echo "COPY OK.. delete source "$(echo "$cmdlist"|grep rm |wc -l ) ;
    cmdlist=$( cat "/tmp/.del_$myhour" | xargs -P 1 -n 96 |sed 's/^/ rm /g;s/$/;/g' )
+   echo "COPY OK.. delete source "$(echo "$cmdlist"|grep rm |wc -l ) ;
    time (echo "open ""$DAVURL""feedarchive/ ;""$cmdlist"" quit" |lftp  2>&1 |grep -v "Access failed: 404 Not Found" ) &
    cat "/tmp/.del_$myhour" |grep -v -e /tmp/rststatus.seen -e /tmp/rststatus.urls |while read a ;do test -e "$a" && rm "$a"  ${a/\.gz/} & sleep 0.01;done &
-   wait 
+   #wait 
 )   
 
 #rm -rf /tmp/restic_$myhour
