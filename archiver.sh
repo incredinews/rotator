@@ -166,7 +166,7 @@ cat /tmp/rst.io |sed 's/^/'"$myhour"'| ADD:/g' &
   restic -r /tmp/restic forget --keep-hourly 1 --prune 2>&1|grep -e byhour -e  json |grep -v ^$|sed 's/^/'"$myhour"'| /g' 2>&1 ) > /tmp/rst.io 
 
 
-[[ "$SECREADY" == "true" ]] && {  echo CPY_SEC ... ; export RESTIC_REPOSITORY="$SECRESTURL";export AWS_SECRET_ACCESS_KEY="$SECRESTSKY";export AWS_ACCESS_KEY_ID="$SECRESTACK" ; time ( restic copy -r "$SECRESTURL" --from-repo /tmp/restic &> /tmp/rstsec.log ) 2>&1 |  cat /tmp/rstsec.log 2>&1|grep -v ^$|sed 's/^/'"$myhour"'| SEC:/g' ;   } &
+[[ "$SECREADY" == "true" ]] && {  echo CPY_SEC ... ; export RESTIC_REPOSITORY="$SECRESTURL";export AWS_SECRET_ACCESS_KEY="$SECRESTSKY";export AWS_ACCESS_KEY_ID="$SECRESTACK" ; time ( restic copy -r "$SECRESTURL" --from-repo /tmp/restic &> /tmp/rstsec.log ) 2>&1 |  cat /tmp/rstsec.log 2>&1|grep -v ^$|sed 's/^/'"$myhour"'| SEC:/g' ;   } 
 sleep 2
 export RESTIC_REPOSITORY="$RESTURL";export AWS_SECRET_ACCESS_KEY="$RESTSKY";export AWS_ACCESS_KEY_ID="$RESTACK"
 BACKUP_OK=false
@@ -174,7 +174,8 @@ BACKUP_OK=false
 export |grep RESTIC|grep -v PASSWO
 echo restic copy -r "$RESTURL" --from-repo /tmp/restic 
       #restic copy -r "$RESTURL" --from-repo /tmp/restic 2>&1 | tee /tmp/rstpri.log | sed 's/^/'"$myhour"'| PRI:/g' 
-      restic copy -r "$RESTURL" --from-repo /tmp/restic 2>&1 && BACKUP_OK=true  | sed 's/^/'"$myhour"'| PRI:/g' 
+      #restic copy -r "$RESTURL" --from-repo /tmp/restic 2>&1 && BACKUP_OK=true  | sed 's/^/'"$myhour"'| PRI:/g' 
+restic copy -r "$RESTURL" --from-repo /tmp/restic 2>&1 && BACKUP_OK=true 
 wait
 grep "saved$" /tmp/rstpri.log && BACKUP_OK=true 
 #cat /tmp/rst.out 2>&1|grep -v ^$|sed 's/^/'"$myhour"'| BCK:/g'
