@@ -72,8 +72,8 @@ test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed"
   for link in $links;do 
   #echo "$links" |while read link;do 
    curlinksum=$(echo "$link"|sha256sum|cut -d" " -f1)
-    grep -q "^$datestamp" "/tmp/rststatus/seen.$feed/$curlinksum" ||  ( echo "$datestamp"  >> "/tmp/rststatus/seen.$feed/$curlinksum" ) &
-    test -e               "/tmp/rststatus/urls.$feed/$curlinksum" ||  ( echo "$link"        > "/tmp/rststatus/urls.$feed/$curlinksum" &&     echo -n "+" ) &
+    grep -q "^$datestamp" "/tmp/rststatus/seen.$feed/$curlinksum" 2>/dev/null ||  ( echo "$datestamp"  >> "/tmp/rststatus/seen.$feed/$curlinksum"  &&     echo -n "+" ) &
+    test -e               "/tmp/rststatus/urls.$feed/$curlinksum"             ||  ( echo "$link"        > "/tmp/rststatus/urls.$feed/$curlinksum"  &&     echo -n "L" ) &
     sleep 0.02
   done 
   wait
