@@ -82,10 +82,11 @@ test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed"
   test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed" 
   test -e "/tmp/rststatus/seen.$feed"  || mkdir -p "/tmp/rststatus/seen.$feed" 
 
+   redcmd="MSET "
   for link in $links;do 
 
   #echo "$links" |while read link;do 
-   redcmd="MSET "
+
    curlinksum=$(echo "$link"|sha256sum|cut -d" " -f1)
     redkey="${curlinksum}"
     curvallo=$( redis_read "lo_$redkey")
@@ -96,10 +97,11 @@ test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed"
     [[ -z "$curvalhi" ]]                                   && redcmd="$redcmd"' '"hi_$redkey"' "'"${datestamp// /}"'"'
     #grep -q "^$datestamp" "/tmp/rststatus/seen.$feed/$curlinksum" 2>/dev/null ||  ( echo "$datestamp"  >> "/tmp/rststatus/seen.$feed/$curlinksum"  &&     echo -n "+" ) &
     #echo "$redcmd"
-    echo "$redcmd"|tr -d '\n' | nc 127.0.0.1 6379 2>&1 |grep -v '+OK' &
+    #echo "$redcmd"|tr -d '\n' | nc 127.0.0.1 6379 2>&1 |grep -v '+OK' &
     test -e               "/tmp/rststatus/urls.$feed/$curlinksum"             ||  ( echo "$link"        > "/tmp/rststatus/urls.$feed/$curlinksum"  &&     echo -n "L" ) &
     sleep 0.005
   done 
+  time (echo "$redcmd"|tr -d '\n' | nc 127.0.0.1 6379 2>&1 |grep -v '+OK') &
   wait
   echo  
 
