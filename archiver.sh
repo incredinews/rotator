@@ -16,7 +16,7 @@ export SECREADY=true
 mkdir -p /tmp/rststatus/
 mkdir -p /tmp/rststatus/sent/
 #[[ -z "$RESTSEC"  ]] && exit 1
-  
+source /tmp/venv/bin/activate
 
 cd /tmp/
 test -e /tmp/feedarch||mkdir /tmp/feedarch
