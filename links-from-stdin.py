@@ -8,7 +8,7 @@ for fileinput_line in fileinput.input():
     for entry in feed.entries:
       #print("Entry Title:", entry.title)
       #print("Entry Link:", entry.link)
-      if link in entry:
+      if "link" in entry:
         print(entry.link)
       #print("Entry Published Date:", entry.published)
       #print("Entry Summary:", entry.summary)
