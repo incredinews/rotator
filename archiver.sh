@@ -173,17 +173,22 @@ BACKUP_OK=false
 #cat /tmp/rst.io |sed 's/^/'"$myhour"'| PRI:/g' | tee /tmp/rst.out &
 export |grep RESTIC|grep -v PASSWO
 echo restic copy -r "$RESTURL" --from-repo /tmp/restic 
-      restic copy -r "$RESTURL" --from-repo /tmp/restic 2>&1 | tee /tmp/rstpri.log | sed 's/^/'"$myhour"'| PRI:/g' 
+      #restic copy -r "$RESTURL" --from-repo /tmp/restic 2>&1 | tee /tmp/rstpri.log | sed 's/^/'"$myhour"'| PRI:/g' 
+      restic copy -r "$RESTURL" --from-repo /tmp/restic && BACKUP_OK=true 2>&1 | 
 wait
 grep "saved$" /tmp/rstpri.log && BACKUP_OK=true 
 #cat /tmp/rst.out 2>&1|grep -v ^$|sed 's/^/'"$myhour"'| BCK:/g'
 
 echo "PRI_OK: $BACKUP_OK"
 [[ "$BACKUP_OK" == "true" ]] && ( cmdlist=$(cat "/tmp/.del_$myhour" |sed 's/^/ rm /g;s/$/;/g') ; echo "COPY OK.. delete source "$(echo "$cmdlist"|grep rm |wc -l ) ;echo "open ""$DAVURL""feedarchive/;""$cmdlist"";quit" |lftp & cat "/tmp/.del_$myhour" |while read a ;do test -e "$a" && rm "$a"  ${a/\.gz/} ;done ;wait )   
+
 #rm -rf /tmp/restic
+
 test -e /tmp/restic || mkdir /tmp/restic
 restic -r /tmp/restic init|| true
-  echo -n ; } ;
+
+echo -n ; } ;
+## end sent_something
 
 test -e "/tmp/.del_$myhour" && rm "/tmp/.del_$myhour"
 echo "############# next round ############"
