@@ -96,7 +96,7 @@ test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed"
     [[ -z "$curvalhi" ]]                                   && redcmd="$redcmd"' '"hi_$redkey"' "'"$datestamp"'"'
     #grep -q "^$datestamp" "/tmp/rststatus/seen.$feed/$curlinksum" 2>/dev/null ||  ( echo "$datestamp"  >> "/tmp/rststatus/seen.$feed/$curlinksum"  &&     echo -n "+" ) &
     echo "$redcmd"
-    echo "$redcmd" | nc 127.0.0.1 6379 &
+    echo "$redcmd" | nc 127.0.0.1 6379 2>&1 |grep -v '+OK' &
     test -e               "/tmp/rststatus/urls.$feed/$curlinksum"             ||  ( echo "$link"        > "/tmp/rststatus/urls.$feed/$curlinksum"  &&     echo -n "L" ) &
     sleep 0.005
   done 
