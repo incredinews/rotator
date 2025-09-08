@@ -74,7 +74,7 @@ test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed"
    curlinksum=$(echo "$link"|sha256sum|cut -d" " -f1)
     grep -q "^$datestamp" "/tmp/rststatus/seen.$feed/$curlinksum" 2>/dev/null ||  ( echo "$datestamp"  >> "/tmp/rststatus/seen.$feed/$curlinksum"  &&     echo -n "+" ) &
     test -e               "/tmp/rststatus/urls.$feed/$curlinksum"             ||  ( echo "$link"        > "/tmp/rststatus/urls.$feed/$curlinksum"  &&     echo -n "L" ) &
-    sleep 0.02
+    sleep 0.01
   done 
   wait
   echo  
@@ -108,7 +108,9 @@ done ## feed level
 BATCHSIZE=44
 echo "$TSURL"|grep -e "^//::1" -e "//127\.0\.0\.1" && export BATCHSIZE=99
 #(echo "$arch" |grep -q ^5d25e83ff3270d5c3bb1d8603fde89f777fb) || ( echo "$links"| xargs -P 1 -n 44|while read list;do 
-( for feed in $(ls "$myhour" -1|cut -d_ -f1|sort -u );do  ls -1 "/tmp/rststatus/urls.$feed/" |while read n;do test -e /tmp/rststatus/seen.$feed/$n && echo $feed/$n;done;done| xargs -P 1 -n $BATCHSIZE |while read sumlist;do 
+fullist=$(( for feed in $(ls "$myhour" -1|cut -d_ -f1|sort -u );do  ls -1 "/tmp/rststatus/urls.$feed/" |while read n;do test -e /tmp/rststatus/seen.$feed/$n && echo $feed/$n;done;done)
+echo "PROCESSING LINKS:"$(echo "$fullist"|wc -l )
+echo "$fullist"| xargs -P 1 -n $BATCHSIZE |while read sumlist;do 
   lotsout='"ts": {';loout='{"urls": [';
   hitsout='"ts": {';hiout='{"urls": [';
   hictr=0
@@ -128,7 +130,6 @@ echo "$TSURL"|grep -e "^//::1" -e "//127\.0\.0\.1" && export BATCHSIZE=99
     hival=$(cat /tmp/rststatus/seen.$feed/$m|sort -n |tail -n1)
   #echo $loval $hival
     test -e /tmp/rststatus/sent/$loval.$feed.$m || [[ "$loval" == "$hival" ]] || {
-     
      loout="$loout"'"'"$(cat /tmp/rststatus/urls.$feed/$m)"'",';lotsout="$lotsout"'"'"$(cat /tmp/rststatus/urls.$feed/$m)"'": '"$loval"',' ;
      touch /tmp/rststatus/sent/$loval.$feed.$m &
     }
@@ -144,8 +145,8 @@ echo "$TSURL"|grep -e "^//::1" -e "//127\.0\.0\.1" && export BATCHSIZE=99
   hijsonout=$(echo "$hiout"|sed 's/,$/],/g')$(echo "$hitsout"|sed 's/,$/}/g')"}"  ;
   loctr=$(echo "$lojsonout"|jq -c .urls[] 2>/dev/null|wc -l  )
   listmsg=$(echo "GOT LIST of":$(echo "$sumlist"|wc -w)" ↓ "$loctr" ↓ | ↑ "$hictr" ↑" )
-  echo "$listmsg"  |grep -q  '↓ 0 ↓ | ↑ 0 ↑ ' && echo "."
-  echo "$listmsg"  |grep -q  '↓ 0 ↓ | ↑ 0 ↑ ' || echo "$listmsg"
+  echo "$listmsg"  |grep -q  '↓ 0 ↓ | ↑ 0 ↑'  && echo "."
+  echo "$listmsg"  |grep -q  '↓ 0 ↓ | ↑ 0 ↑'  || echo "$listmsg"
   #echo "$jsonout"|jq . -c ;#echo "$jsonout"
   #echo "JSON: $hijsonout"
   #echo "$loctr"| grep -q ^0$ || ( curlres=$(curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${lojsonout}" );echo "$curlres"|jq . &>/dev/null || echo "$curlres";echo "$curlres"|jq .|grep -q "null" && echo "$curlres";echo "$curlres"|jq .res -c|grep -q "null"|| (echo "$curlres"|jq .res -c|grep -v -e '": 0' -e '":0' |grep -v -e ^$ -e '^}$' -e '^{$' );echo ) |grep -v ^$ & 
