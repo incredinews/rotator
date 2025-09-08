@@ -78,13 +78,15 @@ test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed"
          [[ "$filesum" == "$lastsum" ]]         && ( echo "$myhour/$arch" >> "/tmp/.del_$myhour")  
       fi
   datestamp=$(date +%s -u -d "$timestamp")
-  echo -n $timestamp " links: "$(echo "$links"|wc -l)"  ==> "
+  linksumcount=$(echo "$links"|wc -l)
+  echo -n $timestamp " links: $linksumcount ==> "
   test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed" 
   test -e "/tmp/rststatus/seen.$feed"  || mkdir -p "/tmp/rststatus/seen.$feed" 
 
    redcmd="MSET "
+  lcount=0
   for link in $links;do 
-
+  lcount=$(( $lcount +1 ))
   #echo "$links" |while read link;do 
 
    curlinksum=$(echo "$link"|sha256sum|cut -d" " -f1)
@@ -98,7 +100,7 @@ test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed"
     #grep -q "^$datestamp" "/tmp/rststatus/seen.$feed/$curlinksum" 2>/dev/null ||  ( echo "$datestamp"  >> "/tmp/rststatus/seen.$feed/$curlinksum"  &&     echo -n "+" ) &
     #echo "$redcmd"
     #echo "$redcmd"|tr -d '\n' | nc 127.0.0.1 6379 2>&1 |grep -v '+OK' &
-    [[ $(echo "$redcmd"|wc -c ) -ge 65000 ]] && { time (echo "$redcmd"|tr -d '\n' | nc 127.0.0.1 6379 2>&1 |grep -v '+OK')  & redcmd="MSET "  ; } ; 
+    [[ $(echo "$redcmd"|wc -c ) -ge 65000 ]] && { (echo -n "pushin at $lcount / $linksumcount :"; time (echo "$redcmd"|tr -d '\n' | nc 127.0.0.1 6379 2>&1 |grep -v '+OK') ) & redcmd="MSET "  ; } ; 
     test -e               "/tmp/rststatus/urls.$feed/$curlinksum"             ||  ( echo "$link"        > "/tmp/rststatus/urls.$feed/$curlinksum"  &&     echo -n "L" ) &
     sleep 0.0005
   done 
