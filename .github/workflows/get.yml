@@ -85,7 +85,7 @@ jobs:
               sed 's/HOST_NAME/'"${LOKI_HOST}"'/g' -i fluent-conf/fluent-bit.conf
               sed 's/USER_NAME/'"${LOKI_USER}"'/g' -i fluent-conf/fluent-bit.conf
               sed   's/API_KEY/'"${LOKI_TOKN}"'/g' -i fluent-conf/fluent-bit.conf
-              echo build:;time docker compose build
+              echo build:;bash -c "time docker compose build"
               #docker compose up
               docker compose up -d loki 
               docker compose logs --follow loki &
