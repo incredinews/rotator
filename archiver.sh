@@ -178,7 +178,7 @@ cat /tmp/rst.io |sed 's/^/'"$myhour"'| ADD:/g' &
 
 
 #[[ "$SECREADY" == "true" ]] && {  echo CPY_SEC ... ; export RESTIC_REPOSITORY="$SECRESTURL";export AWS_SECRET_ACCESS_KEY="$SECRESTSKY";export AWS_ACCESS_KEY_ID="$SECRESTACK" ; time ( restic copy -r "$SECRESTURL" --from-repo /tmp/restic &> /tmp/rstsec.log ) 2>&1 ;  cat /tmp/rstsec.log 2>&1|grep -v ^$|sed 's/^/'"$myhour"'| SEC:/g' ;   } 
-[[ "$SECREADY" == "true" ]] && {  echo CPY_SEC ... ; export RESTIC_REPOSITORY="$SECRESTURL";export AWS_SECRET_ACCESS_KEY="$SECRESTSKY";export AWS_ACCESS_KEY_ID="$SECRESTACK" ;  echo "sending to $SECRESTURL";restic copy -r "$SECRESTURL" --from-repo /tmp/restic --host byhour.gzip.feed.lan  latest ;   } 
+[[ "$SECREADY" == "true" ]] && {  echo CPY_SEC ... ; export RESTIC_REPOSITORY="$SECRESTURL";export AWS_SECRET_ACCESS_KEY="$SECRESTSKY";export AWS_ACCESS_KEY_ID="$SECRESTACK" ;  echo "sending to $SECRESTURL";restic copy -r "$SECRESTURL" --from-repo /tmp/restic --host byhour.gzip.feed.lan  latest ;   }  &
 sleep 2
 export RESTIC_REPOSITORY="$RESTURL";export AWS_SECRET_ACCESS_KEY="$RESTSKY";export AWS_ACCESS_KEY_ID="$RESTACK"
 BACKUP_OK=false
@@ -188,8 +188,8 @@ echo restic copy -r "$RESTURL" --from-repo /tmp/restic  --host byhour.gzip.feed.
       #restic copy -r "$RESTURL" --from-repo /tmp/restic 2>&1 | tee /tmp/rstpri.log | sed 's/^/'"$myhour"'| PRI:/g' 
       #restic copy -r "$RESTURL" --from-repo /tmp/restic 2>&1 && BACKUP_OK=true  | sed 's/^/'"$myhour"'| PRI:/g' 
 restic copy -r "$RESTURL" --from-repo /tmp/restic       --host byhour.gzip.feed.lan latest 2>&1 # && BACKUP_OK=true 
-restic snapshots -r "$RESTURL"|grep "byhour.gzip.feed.lan"
-restic snapshots -r "$RESTURL"|grep "byhour.gzip.feed.lan" |grep "$myhour" && BACKUP_OK=true
+  restic snapshots -r "$RESTURL"|grep "byhour.gzip.feed.lan"  |grep "$myhour"
+((restic snapshots -r "$RESTURL"|grep "byhour.gzip.feed.lan") |grep "$myhour") && BACKUP_OK=true
 wait
 #grep "saved$" /tmp/rstpri.log && BACKUP_OK=true 
 #cat /tmp/rst.out 2>&1|grep -v ^$|sed 's/^/'"$myhour"'| BCK:/g'
