@@ -104,7 +104,7 @@ test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed"
     test -e               "/tmp/rststatus/urls.$feed/$curlinksum"             ||  ( echo "$link"        > "/tmp/rststatus/urls.$feed/$curlinksum"  &&     echo -n "L" ) &
     sleep 0.0005
   done 
-  [[ "$redcmd" = "MSET " ]] || time (echo "$redcmd"|tr -d '\n' | nc 127.0.0.1 6379 2>&1 |grep -v '+OK') &
+  [[ "$redcmd" == "MSET " ]] || time (echo "$redcmd"|tr -d '\n' | nc 127.0.0.1 6379 2>&1 |grep -v '+OK') &
   wait
   echo  
 
@@ -185,7 +185,7 @@ cat /tmp/fullist.$myhour | xargs -P 1 -n $BATCHSIZE |while read sumlist;do
   hijsonout=$(echo "$hiout"|sed 's/,$/],/g')$(echo "$hitsout"|sed 's/,$/}/g')"}"  ;
   loctr=$(echo "$lojsonout"|jq -c .urls[] 2>/dev/null|wc -l  )
   listmsg=$(echo "GOT LIST of":$(echo "$sumlist"|wc -w)" ↓ "$loctr" ↓ | ↑ "$hictr" ↑" )
-  echo "$listmsg"  |grep -q  '↓ 0 ↓ | ↑ 0 ↑'  && echo "."
+  echo "$listmsg"  |grep -q  '↓ 0 ↓ | ↑ 0 ↑'  && echo -n "."
   echo "$listmsg"  |grep -q  '↓ 0 ↓ | ↑ 0 ↑'  || echo "$listmsg"
   #echo "$jsonout"|jq . -c ;#echo "$jsonout"
   #echo "JSON: $hijsonout"
