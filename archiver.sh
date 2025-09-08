@@ -125,13 +125,14 @@ echo "$TSURL"|grep -e "^//::1" -e "//127\.0\.0\.1" && export BATCHSIZE=99
     hival=$(cat /tmp/rststatus/seen.$feed/$m|sort -n |tail -n1)
   #echo $loval $hival
     test -e /tmp/rststatus/sent/$loval.$feed.$m || [[ "$loval" == "$hival" ]] || {
-      touch /tmp/rststatus/sent/$loval.$feed.$m
+     
      loout="$loout"'"'"$(cat /tmp/rststatus/urls.$feed/$m)"'",';lotsout="$lotsout"'"'"$(cat /tmp/rststatus/urls.$feed/$m)"'": '"$loval"',' ;
+     touch /tmp/rststatus/sent/$loval.$feed.$m &
     }
     test -e /tmp/rststatus/sent/$hival.$feed.$m || [[ "$loval" == "$hival" ]] || {
      hiout="$hiout"'"'"$(cat /tmp/rststatus/urls.$feed/$m)"'",';hitsout="$hitsout"'"'"$(cat /tmp/rststatus/urls.$feed/$m)"'": '"$hival"',' ;
      hictr=$(( $hictr + 1 ))
-     touch /tmp/rststatus/sent/$hival.$feed.$m
+     touch /tmp/rststatus/sent/$hival.$feed.$m &
     }
   echo -n ; } ; 
   done  
@@ -173,7 +174,7 @@ cat /tmp/rst.io |sed 's/^/'"$myhour"'| ADD:/g' &
 
 
 #[[ "$SECREADY" == "true" ]] && {  echo CPY_SEC ... ; export RESTIC_REPOSITORY="$SECRESTURL";export AWS_SECRET_ACCESS_KEY="$SECRESTSKY";export AWS_ACCESS_KEY_ID="$SECRESTACK" ; time ( restic copy -r "$SECRESTURL" --from-repo /tmp/restic &> /tmp/rstsec.log ) 2>&1 ;  cat /tmp/rstsec.log 2>&1|grep -v ^$|sed 's/^/'"$myhour"'| SEC:/g' ;   } 
-[[ "$SECREADY" == "true" ]] && {  echo CPY_SEC ... ; export RESTIC_REPOSITORY="$SECRESTURL";export AWS_SECRET_ACCESS_KEY="$SECRESTSKY";export AWS_ACCESS_KEY_ID="$SECRESTACK" ;  restic copy -r "$SECRESTURL" --from-repo /tmp/restic  ;   } 
+[[ "$SECREADY" == "true" ]] && {  echo CPY_SEC ... ; export RESTIC_REPOSITORY="$SECRESTURL";export AWS_SECRET_ACCESS_KEY="$SECRESTSKY";export AWS_ACCESS_KEY_ID="$SECRESTACK" ;  echo "sending to $SECRESTURL";restic copy -r "$SECRESTURL" --from-repo /tmp/restic  latest ;   } 
 sleep 2
 export RESTIC_REPOSITORY="$RESTURL";export AWS_SECRET_ACCESS_KEY="$RESTSKY";export AWS_ACCESS_KEY_ID="$RESTACK"
 BACKUP_OK=false
@@ -182,7 +183,8 @@ export |grep RESTIC|grep -v PASSWO
 echo restic copy -r "$RESTURL" --from-repo /tmp/restic 
       #restic copy -r "$RESTURL" --from-repo /tmp/restic 2>&1 | tee /tmp/rstpri.log | sed 's/^/'"$myhour"'| PRI:/g' 
       #restic copy -r "$RESTURL" --from-repo /tmp/restic 2>&1 && BACKUP_OK=true  | sed 's/^/'"$myhour"'| PRI:/g' 
-restic copy -r "$RESTURL" --from-repo /tmp/restic  2>&1 # && BACKUP_OK=true 
+restic copy -r "$RESTURL" --from-repo /tmp/restic latest 2>&1 # && BACKUP_OK=true 
+restic snapshots -r "$RESTURL"|grep "byhour.gzip.feed.lan"
 restic snapshots -r "$RESTURL"|grep "byhour.gzip.feed.lan" |grep "$myhour" && BACKUP_OK=true
 wait
 #grep "saved$" /tmp/rstpri.log && BACKUP_OK=true 
