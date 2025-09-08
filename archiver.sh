@@ -100,56 +100,56 @@ done; ## archive level
 done ## feed level
 
 
-##                      batch n items for timestamp
-BATCHSIZE=44
-echo "$TSURL"|grep -e "^//::1" -e "//127\.0\.0\.1" && export BATCHSIZE=99
-#(echo "$arch" |grep -q ^5d25e83ff3270d5c3bb1d8603fde89f777fb) || ( echo "$links"| xargs -P 1 -n 44|while read list;do 
-( for feed in $(ls "$myhour" -1|cut -d_ -f1|sort -u );do  ls -1 "/tmp/urls.$feed/" |while read n;do test -e /tmp/seen.$feed/$n && echo $feed/$n;done;done| xargs -P 1 -n $BATCHSIZE |while read sumlist;do 
-  lotsout='"ts": {';loout='{"urls": [';
-  hitsout='"ts": {';hiout='{"urls": [';
-  hictr=0
-  #echo $sumlist
-  for elem in $sumlist;do 
-  m=$(echo "$elem"|cut -d"/" -f2)
-  feed=$(echo "$elem"|cut -d"/" -f1)
-   #cat /tmp/urls.$feed/$m
-  #( cat /tmp/urls.$feed/$m|grep -q -e ^http:// -e ^ftp:// -e ^redis:// -e ^rediss:// -e ^https:// -e ^dav:// -e ^davs:// -e ^smb:// -e ^s3:// ) || cat /tmp/urls.$feed/$m
-   
-   FEEDOK=true
-   cat /tmp/urls.$feed/$m|grep "and a sneak peek of Jetpa" && FEEDOK=false
-
-  [[ "$FEEDOK" == "true" ]] && (cat /tmp/urls.$feed/$m |grep  -q -e "^http://" -e "^ftp://" -e "^redis://" -e "^rediss://" -e "^https://" -e "^dav://" -e "^davs://" -e "^smb://" -e "^s3://") && {
-  #echo found $m
-    loval=$(cat /tmp/seen.$feed/$m|sort -n |head -n1)
-    hival=$(cat /tmp/seen.$feed/$m|sort -n |tail -n1)
-  #echo $loval $hival
-     loout="$loout"'"'"$(cat /tmp/urls.$feed/$m)"'",';lotsout="$lotsout"'"'"$(cat /tmp/urls.$feed/$m)"'": '"$loval"',' ;
-    [[ "$loval" == "$hival" ]] || {
-     hiout="$hiout"'"'"$(cat /tmp/urls.$feed/$m)"'",';hitsout="$hitsout"'"'"$(cat /tmp/urls.$feed/$m)"'": '"$hival"',' ;
-     hictr=$(( $hictr + 1 ))
-    }
-  echo -n ; } ; 
-  done  
-
-  lojsonout=$(echo "$loout"|sed 's/,$/],/g')$(echo "$lotsout"|sed 's/,$/}/g')"}"  ;
-  hijsonout=$(echo "$hiout"|sed 's/,$/],/g')$(echo "$hitsout"|sed 's/,$/}/g')"}"  ;
-  loctr=$(echo "$lojsonout"|jq -c .urls[] 2>/dev/null|wc -l  )
-  echo "GOT LIST of":$(echo "$sumlist"|wc -w)" ↓ "$loctr" ↓ | ↑ "$hictr" ↑"
-  #echo "$jsonout"|jq . -c ;#echo "$jsonout"
-  #echo "JSON: $hijsonout"
-  #echo "$loctr"| grep -q ^0$ || ( curlres=$(curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${lojsonout}" );echo "$curlres"|jq . &>/dev/null || echo "$curlres";echo "$curlres"|jq .|grep -q "null" && echo "$curlres";echo "$curlres"|jq .res -c|grep -q "null"|| (echo "$curlres"|jq .res -c|grep -v -e '": 0' -e '":0' |grep -v -e ^$ -e '^}$' -e '^{$' );echo ) |grep -v ^$ & 
-  #echo "$loctr"| grep -q ^0$ || ( curlres=$(curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${lojsonout}" );(echo "$curlres"|jq . &>/dev/null && (echo "$curlres"|jq .) ) || echo "$curlres";echo ) |grep -v ^$ & 
-  echo -n "--" $loctr
-  (echo "$loctr"|grep -q ^0$) || ( echo -n "↓..." ;curlres=$(curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${lojsonout}" 2>&1  );(echo "$curlres";echo ) |grep -v ^$ )  & 
-  (echo "$loctr"|grep -q ^0$) ||   sleep 0.4
-  echo
-  #echo "$hictr"| grep -q ^0$ || ( curlres=$(curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${hijsonout}" );echo "$curlres"|jq . &>/dev/null || echo "$curlres";echo "$curlres"|jq .|grep -q "null" && echo "$curlres";echo "$curlres"|jq .res -c|grep -q "null"|| (echo "$curlres"|jq .res -c|grep -v -e '": 0' -e '":0' |grep -v -e ^$ -e '^}$' -e '^{$' );echo ) |grep -v ^$ &
-  #echo "$hictr"| grep -q ^0$ || ( curlres=$(curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${hijsonout}" );(echo "$curlres"|jq . &>/dev/null && (echo "$curlres"|jq .) ) || echo "$curlres";echo ) |grep -v ^$ & 
-  echo -n "++" $hictr
-  (echo "$hictr"|grep -q ^0$) || ( echo -n "↑..." ;curlres=$(curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${hijsonout}" 2>&1  );(echo "$curlres";echo ) |grep -v ^$ ) & 
-  (echo "$hictr"|grep -q ^0$) || ( curlres=$(curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${hijsonout}" ); echo "$curlres";echo ) |grep -v ^$  & 
-  [[ "$hictr" == 0 ]] || sleep 0.3
-done  2>&1  )  2>&1 |sed 's/^/ADDURL:/g'   ;
+####                      batch n items for timestamp
+##BATCHSIZE=44
+##echo "$TSURL"|grep -e "^//::1" -e "//127\.0\.0\.1" && export BATCHSIZE=99
+###(echo "$arch" |grep -q ^5d25e83ff3270d5c3bb1d8603fde89f777fb) || ( echo "$links"| xargs -P 1 -n 44|while read list;do 
+##( for feed in $(ls "$myhour" -1|cut -d_ -f1|sort -u );do  ls -1 "/tmp/urls.$feed/" |while read n;do test -e /tmp/seen.$feed/$n && echo $feed/$n;done;done| xargs -P 1 -n $BATCHSIZE |while read sumlist;do 
+##  lotsout='"ts": {';loout='{"urls": [';
+##  hitsout='"ts": {';hiout='{"urls": [';
+##  hictr=0
+##  #echo $sumlist
+##  for elem in $sumlist;do 
+##  m=$(echo "$elem"|cut -d"/" -f2)
+##  feed=$(echo "$elem"|cut -d"/" -f1)
+##   #cat /tmp/urls.$feed/$m
+##  #( cat /tmp/urls.$feed/$m|grep -q -e ^http:// -e ^ftp:// -e ^redis:// -e ^rediss:// -e ^https:// -e ^dav:// -e ^davs:// -e ^smb:// -e ^s3:// ) || cat /tmp/urls.$feed/$m
+##   
+##   FEEDOK=true
+##   cat /tmp/urls.$feed/$m|grep "and a sneak peek of Jetpa" && FEEDOK=false
+##
+##  [[ "$FEEDOK" == "true" ]] && (cat /tmp/urls.$feed/$m |grep  -q -e "^http://" -e "^ftp://" -e "^redis://" -e "^rediss://" -e "^https://" -e "^dav://" -e "^davs://" -e "^smb://" -e "^s3://") && {
+##  #echo found $m
+##    loval=$(cat /tmp/seen.$feed/$m|sort -n |head -n1)
+##    hival=$(cat /tmp/seen.$feed/$m|sort -n |tail -n1)
+##  #echo $loval $hival
+##     loout="$loout"'"'"$(cat /tmp/urls.$feed/$m)"'",';lotsout="$lotsout"'"'"$(cat /tmp/urls.$feed/$m)"'": '"$loval"',' ;
+##    [[ "$loval" == "$hival" ]] || {
+##     hiout="$hiout"'"'"$(cat /tmp/urls.$feed/$m)"'",';hitsout="$hitsout"'"'"$(cat /tmp/urls.$feed/$m)"'": '"$hival"',' ;
+##     hictr=$(( $hictr + 1 ))
+##    }
+##  echo -n ; } ; 
+##  done  
+##
+##  lojsonout=$(echo "$loout"|sed 's/,$/],/g')$(echo "$lotsout"|sed 's/,$/}/g')"}"  ;
+##  hijsonout=$(echo "$hiout"|sed 's/,$/],/g')$(echo "$hitsout"|sed 's/,$/}/g')"}"  ;
+##  loctr=$(echo "$lojsonout"|jq -c .urls[] 2>/dev/null|wc -l  )
+##  echo "GOT LIST of":$(echo "$sumlist"|wc -w)" ↓ "$loctr" ↓ | ↑ "$hictr" ↑"
+##  #echo "$jsonout"|jq . -c ;#echo "$jsonout"
+##  #echo "JSON: $hijsonout"
+##  #echo "$loctr"| grep -q ^0$ || ( curlres=$(curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${lojsonout}" );echo "$curlres"|jq . &>/dev/null || echo "$curlres";echo "$curlres"|jq .|grep -q "null" && echo "$curlres";echo "$curlres"|jq .res -c|grep -q "null"|| (echo "$curlres"|jq .res -c|grep -v -e '": 0' -e '":0' |grep -v -e ^$ -e '^}$' -e '^{$' );echo ) |grep -v ^$ & 
+##  #echo "$loctr"| grep -q ^0$ || ( curlres=$(curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${lojsonout}" );(echo "$curlres"|jq . &>/dev/null && (echo "$curlres"|jq .) ) || echo "$curlres";echo ) |grep -v ^$ & 
+##  echo -n "--" $loctr
+##  (echo "$loctr"|grep -q ^0$) || ( echo -n "↓..." ;curlres=$(curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${lojsonout}" 2>&1  );(echo "$curlres";echo ) |grep -v ^$ )  & 
+##  (echo "$loctr"|grep -q ^0$) ||   sleep 0.4
+##  echo
+##  #echo "$hictr"| grep -q ^0$ || ( curlres=$(curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${hijsonout}" );echo "$curlres"|jq . &>/dev/null || echo "$curlres";echo "$curlres"|jq .|grep -q "null" && echo "$curlres";echo "$curlres"|jq .res -c|grep -q "null"|| (echo "$curlres"|jq .res -c|grep -v -e '": 0' -e '":0' |grep -v -e ^$ -e '^}$' -e '^{$' );echo ) |grep -v ^$ &
+##  #echo "$hictr"| grep -q ^0$ || ( curlres=$(curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${hijsonout}" );(echo "$curlres"|jq . &>/dev/null && (echo "$curlres"|jq .) ) || echo "$curlres";echo ) |grep -v ^$ & 
+##  echo -n "++" $hictr
+##  (echo "$hictr"|grep -q ^0$) || ( echo -n "↑..." ;curlres=$(curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${hijsonout}" 2>&1  );(echo "$curlres";echo ) |grep -v ^$ ) & 
+##  (echo "$hictr"|grep -q ^0$) || ( curlres=$(curl -s -H "API-KEY: $TSTOKEN" "${TSURL}" -H "Content-Type: application/json" -X POST  --data "${hijsonout}" ); echo "$curlres";echo ) |grep -v ^$  & 
+##  [[ "$hictr" == 0 ]] || sleep 0.3
+##done  2>&1  )  2>&1 |sed 's/^/ADDURL:/g'   ;
 timestamp=$(echo "$myhour" |sed 's/_/ /g;s/\./:/g;s/$/:59:59/g')
 datestamp=$(date +%s -u -d "$timestamp")
 echo "DONE W SENDING .. snapsotting : $SENT_SOMETHING"
