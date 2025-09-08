@@ -1,5 +1,7 @@
 #!/bin/bash 
 startdir=$(pwd)
+echo PING |nc 127.0.0.1 6379|grep -q PONG || exit 1
+
 [[ -z "$RESTURL"  ]] && exit 1
 [[ -z "$RESTPASS" ]] && exit 1
 [[ -z "$DAVURL"   ]] && exit 1
@@ -7,6 +9,11 @@ startdir=$(pwd)
 [[ -z "$TSURL"    ]] && exit 1
 [[ -z "$RESTACK"  ]] && exit 1
 [[ -z "$RESTSKY"  ]] && exit 1
+
+redis_read() {
+  echo get "$1" |nc 127.0.0.1 6379|tail -n+2
+}
+
 export RESTIC_PASSWORD="$RESTPASS"
 export RESTIC_FROM_PASSWORD="$RESTPASS"
 export RESTIC_REPOSITORY="$RESTURL";export AWS_SECRET_ACCESS_KEY="$RESTSKY";export AWS_ACCESS_KEY_ID="$RESTACK"
@@ -77,9 +84,18 @@ test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed"
   for link in $links;do 
   #echo "$links" |while read link;do 
    curlinksum=$(echo "$link"|sha256sum|cut -d" " -f1)
-    grep -q "^$datestamp" "/tmp/rststatus/seen.$feed/$curlinksum" 2>/dev/null ||  ( echo "$datestamp"  >> "/tmp/rststatus/seen.$feed/$curlinksum"  &&     echo -n "+" ) &
+    redkey="seen_${curlinksum}"
+    curvallo=$( redis_read "lo_$redkey")
+    curvalhi=$( redis_read "hi_$redkey")
+    redcmd="MSET "
+    [[ -z "$curvallo" ]]                                   && redcmd="$redcmd"' '"lo_$redkey"' "'"$datestamp"'"'
+    [[ -z "$curvallo" ]] || [[ $curvallo -gt $datestamp ]] && redcmd="$redcmd"' '"lo_$redkey"' "'"$datestamp"'"'
+    [[ -z "$curvalhi" ]] || [[ $curvalhi -lt $datestamp ]] && redcmd="$redcmd"' '"hi_$redkey"' "'"$datestamp"'"'
+    [[ -z "$curvalhi" ]]                                   && redcmd="$redcmd"' '"hi_$redkey"' "'"$datestamp"'"'
+    #grep -q "^$datestamp" "/tmp/rststatus/seen.$feed/$curlinksum" 2>/dev/null ||  ( echo "$datestamp"  >> "/tmp/rststatus/seen.$feed/$curlinksum"  &&     echo -n "+" ) &
+    echo "$redcmd" | nc 127.0.0.1 6379 &
     test -e               "/tmp/rststatus/urls.$feed/$curlinksum"             ||  ( echo "$link"        > "/tmp/rststatus/urls.$feed/$curlinksum"  &&     echo -n "L" ) &
-    sleep 0.01
+    sleep 0.005
   done 
   wait
   echo  
@@ -137,8 +153,13 @@ cat /tmp/fullist.$myhour | xargs -P 1 -n $BATCHSIZE |while read sumlist;do
 
   [[ "$FEEDOK" == "true" ]] && (cat /tmp/rststatus/urls.$feed/$m |grep  -q -e "^http://" -e "^ftp://" -e "^redis://" -e "^rediss://" -e "^https://" -e "^dav://" -e "^davs://" -e "^smb://" -e "^s3://") && {
   #echo found $m
-    loval=$(cat /tmp/rststatus/seen.$feed/$m|sort -n |head -n1)
-    hival=$(cat /tmp/rststatus/seen.$feed/$m|sort -n |tail -n1)
+  curlinksum=$m
+  redkey="seen_${curlinksum}"
+  loval=$( redis_read "lo_$redkey")
+  hival=$( redis_read "hi_$redkey")
+
+    #loval=$(cat /tmp/rststatus/seen.$feed/$m|sort -n |head -n1)
+    #hival=$(cat /tmp/rststatus/seen.$feed/$m|sort -n |tail -n1)
   #echo $loval $hival
     test -e /tmp/rststatus/sent/$loval.$feed.$m || [[ "$loval" == "$hival" ]] || {
      loout="$loout"'"'"$(cat /tmp/rststatus/urls.$feed/$m)"'",';lotsout="$lotsout"'"'"$(cat /tmp/rststatus/urls.$feed/$m)"'": '"$loval"',' ;
