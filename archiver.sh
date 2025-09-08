@@ -52,7 +52,8 @@ test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed"
   for arch in $(ls "$myhour" -1|grep $feed|sort -n|grep gz);do
       hostname=$(echo "$arch"|cut -d"_" -f1);
       timestamp=$(echo "$arch"|cut -d_ -f2-|cut -d"." -f1,2 |sed 's/_/ /g;s/\./:/g;s/$/:00/g');
-      export RESTIC_HOST=$hostname
+      #export RESTIC_HOST=$hostname
+      export RESTIC_HOST=byhour.gzip.feed.lan
       links=$( cat "$myhour/$arch"|gunzip | tee "$myhour/"${arch/\.gz/} |jq .content|sed 's/\\n/\n/g'|sed 's/<link><!\[CDATA\[/<link>/g'|sed 's/\]\]><\/link>/<\/link>/g'|grep "<link"|sed 's/\\"//g'|sed 's/link href=/link>/g'|sed 's/<link/\n<link/g'|grep link |cut -d">" -f2|cut -d"<" -f1 |sed 's/?ref=rss\///g'|grep -v " rel=self "|sed 's/\.html rel=/.html\nrel=/g'|sed 's/ rel=/\nrel=/g'|sed 's/#ftag=[A-Za-z0-9]\+$//g' |sed 's/ /\n/g'|grep -v ^$|grep -e ^ftp:// -e ^https:// -e ^http:// |grep -v "http://www.blogger.com/feeds/")
       filesum=$( md5sum "$myhour/"${arch/\.gz/} |  cut -d" " -f1                    )
       linksum=$(   echo "$links" |sort -n |md5sum|cut -d" " -f1 )
@@ -173,16 +174,16 @@ cat /tmp/rst.io |sed 's/^/'"$myhour"'| ADD:/g' &
 
 
 #[[ "$SECREADY" == "true" ]] && {  echo CPY_SEC ... ; export RESTIC_REPOSITORY="$SECRESTURL";export AWS_SECRET_ACCESS_KEY="$SECRESTSKY";export AWS_ACCESS_KEY_ID="$SECRESTACK" ; time ( restic copy -r "$SECRESTURL" --from-repo /tmp/restic &> /tmp/rstsec.log ) 2>&1 ;  cat /tmp/rstsec.log 2>&1|grep -v ^$|sed 's/^/'"$myhour"'| SEC:/g' ;   } 
-[[ "$SECREADY" == "true" ]] && {  echo CPY_SEC ... ; export RESTIC_REPOSITORY="$SECRESTURL";export AWS_SECRET_ACCESS_KEY="$SECRESTSKY";export AWS_ACCESS_KEY_ID="$SECRESTACK" ;  echo "sending to $SECRESTURL";restic copy -r "$SECRESTURL" --from-repo /tmp/restic  latest ;   } 
+[[ "$SECREADY" == "true" ]] && {  echo CPY_SEC ... ; export RESTIC_REPOSITORY="$SECRESTURL";export AWS_SECRET_ACCESS_KEY="$SECRESTSKY";export AWS_ACCESS_KEY_ID="$SECRESTACK" ;  echo "sending to $SECRESTURL";restic copy -r "$SECRESTURL" --from-repo /tmp/restic --host byhour.gzip.feed.lan  latest ;   } 
 sleep 2
 export RESTIC_REPOSITORY="$RESTURL";export AWS_SECRET_ACCESS_KEY="$RESTSKY";export AWS_ACCESS_KEY_ID="$RESTACK"
 BACKUP_OK=false
 #cat /tmp/rst.io |sed 's/^/'"$myhour"'| PRI:/g' | tee /tmp/rst.out &
 export |grep RESTIC|grep -v PASSWO
-echo restic copy -r "$RESTURL" --from-repo /tmp/restic 
+echo restic copy -r "$RESTURL" --from-repo /tmp/restic  --host byhour.gzip.feed.lan latest
       #restic copy -r "$RESTURL" --from-repo /tmp/restic 2>&1 | tee /tmp/rstpri.log | sed 's/^/'"$myhour"'| PRI:/g' 
       #restic copy -r "$RESTURL" --from-repo /tmp/restic 2>&1 && BACKUP_OK=true  | sed 's/^/'"$myhour"'| PRI:/g' 
-restic copy -r "$RESTURL" --from-repo /tmp/restic latest 2>&1 # && BACKUP_OK=true 
+restic copy -r "$RESTURL" --from-repo /tmp/restic       --host byhour.gzip.feed.lan latest 2>&1 # && BACKUP_OK=true 
 restic snapshots -r "$RESTURL"|grep "byhour.gzip.feed.lan"
 restic snapshots -r "$RESTURL"|grep "byhour.gzip.feed.lan" |grep "$myhour" && BACKUP_OK=true
 wait
