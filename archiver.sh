@@ -160,25 +160,25 @@ mkfifo /tmp/rst.io &>/dev/null|| true
 cat /tmp/rst.io |sed 's/^/'"$myhour"'| ADD:/g' &
 #echo restic backup --time "$timestamp" --host "$hostname" "$myhour/*.json
 #     restic backup --time "$timestamp" --host "byhour" $myhour/*.json &> /tmp/rst.io 
-( restic backup --stdin-filename feeds_$myhour.tgz --time "$timestamp" --host "byhour_compressed" --stdin-from-command -- /bin/bash -c "tar cv $myhour/*.json | gzip --rsyncable -c "  2>&1 
+( restic -r /tmp/restic backup --stdin-filename feeds_$myhour.tgz --time "$timestamp" --host "byhour_compressed" --stdin-from-command -- /bin/bash -c "tar cv $myhour/*.json | gzip --rsyncable -c "  2>&1 
 
 #  && ( echo "$myhour/$arch" >> "/tmp/.del_$myhour" )
-restic forget --keep-hourly 2 --prune 2>&1|grep -e byhost -e  json |grep -v ^$|sed 's/^/'"$myhour"'| /g' 2>&1 ) > /tmp/rst.io 
+  restic -r /tmp/restic forget --keep-hourly 1 --prune 2>&1|grep -e byhour -e  json |grep -v ^$|sed 's/^/'"$myhour"'| /g' 2>&1 ) > /tmp/rst.io 
 
 
-[[ "$SECREADY" == "true" ]] && {  echo CPY_SEC; export RESTIC_REPOSITORY="$SECRESTURL";export AWS_SECRET_ACCESS_KEY="$SECRESTSKY";export AWS_ACCESS_KEY_ID="$SECRESTACK" ; restic copy -r "$SECRESTURL" --from-repo /tmp/restic &> /tmp/rstsec.log ;  cat /tmp/rstsec.log 2>&1|grep -v ^$|sed 's/^/'"$myhour"'| SEC:/g' ;   } &
+[[ "$SECREADY" == "true" ]] && {  echo CPY_SEC ... ; export RESTIC_REPOSITORY="$SECRESTURL";export AWS_SECRET_ACCESS_KEY="$SECRESTSKY";export AWS_ACCESS_KEY_ID="$SECRESTACK" ; time ( restic copy -r "$SECRESTURL" --from-repo /tmp/restic &> /tmp/rstsec.log ) 2>&1 |  cat /tmp/rstsec.log 2>&1|grep -v ^$|sed 's/^/'"$myhour"'| SEC:/g' ;   } &
 sleep 2
 export RESTIC_REPOSITORY="$RESTURL";export AWS_SECRET_ACCESS_KEY="$RESTSKY";export AWS_ACCESS_KEY_ID="$RESTACK"
 BACKUP_OK=false
 #cat /tmp/rst.io |sed 's/^/'"$myhour"'| PRI:/g' | tee /tmp/rst.out &
 export |grep RESTIC|grep -v PASSWO
-echo 'restic copy -r "$RESTURL" --from-repo /tmp/restic '
+echo restic copy -r "$RESTURL" --from-repo /tmp/restic 
       restic copy -r "$RESTURL" --from-repo /tmp/restic 2>&1 | tee /tmp/rstpri.log | sed 's/^/'"$myhour"'| PRI:/g' 
 wait
 grep "saved$" /tmp/rstpri.log && BACKUP_OK=true 
 #cat /tmp/rst.out 2>&1|grep -v ^$|sed 's/^/'"$myhour"'| BCK:/g'
 
-echo "OK: $BACKUP_OK"
+echo "PRI_OK: $BACKUP_OK"
 [[ "$BACKUP_OK" == "true" ]] && ( cmdlist=$(cat "/tmp/.del_$myhour" |sed 's/^/ rm /g;s/$/;/g') ; echo "COPY OK.. delete source "$(echo "$cmdlist"|grep rm |wc -l ) ;echo "open ""$DAVURL""feedarchive/;""$cmdlist"";quit" |lftp & cat "/tmp/.del_$myhour" |while read a ;do test -e "$a" && rm "$a"  ${a/\.gz/} ;done ;wait )   
 #rm -rf /tmp/restic
 test -e /tmp/restic || mkdir /tmp/restic
@@ -186,7 +186,7 @@ restic -r /tmp/restic init|| true
   echo -n ; } ;
 
 test -e "/tmp/.del_$myhour" && rm "/tmp/.del_$myhour"
-
+echo "############# next round ############"
 done
 
 export RESTIC_REPOSITORY="$RESTURL";export AWS_SECRET_ACCESS_KEY="$RESTSKY";export AWS_ACCESS_KEY_ID="$RESTACK"
