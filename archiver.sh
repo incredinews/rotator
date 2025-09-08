@@ -66,7 +66,7 @@ test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed"
          [[ "$filesum" == "$lastsum" ]]         && ( echo "$myhour/$arch" >> "/tmp/.del_$myhour")  
       fi
   datestamp=$(date +%s -u -d "$timestamp")
-  echo -n $timestamp " links: "$(echo "$links"|wc -l)
+  echo -n $timestamp " links: "$(echo "$links"|wc -l)"  ==> "
   test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed" 
   test -e "/tmp/rststatus/seen.$feed"  || mkdir -p "/tmp/rststatus/seen.$feed" 
   for link in $links;do 
