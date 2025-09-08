@@ -175,9 +175,9 @@ export |grep RESTIC|grep -v PASSWO
 echo restic copy -r "$RESTURL" --from-repo /tmp/restic 
       #restic copy -r "$RESTURL" --from-repo /tmp/restic 2>&1 | tee /tmp/rstpri.log | sed 's/^/'"$myhour"'| PRI:/g' 
       #restic copy -r "$RESTURL" --from-repo /tmp/restic 2>&1 && BACKUP_OK=true  | sed 's/^/'"$myhour"'| PRI:/g' 
-restic copy -r "$RESTURL" --from-repo /tmp/restic 2>&1 && BACKUP_OK=true 
+restic copy -r "$RESTURL" --from-repo /tmp/restic # 2>&1 && BACKUP_OK=true 
 wait
-grep "saved$" /tmp/rstpri.log && BACKUP_OK=true 
+#grep "saved$" /tmp/rstpri.log && BACKUP_OK=true 
 #cat /tmp/rst.out 2>&1|grep -v ^$|sed 's/^/'"$myhour"'| BCK:/g'
 
 echo "PRI_OK: $BACKUP_OK"
