@@ -14,6 +14,7 @@ export SECREADY=true
 [[ -z $SECRESTSKY       ]] && export SECREADY=false
 [[ -z $SECRESTURL ]] && export SECREADY=false
 mkdir -p /tmp/rststatus/
+mkdir -p /tmp/rststatus/sent/
 #[[ -z "$RESTSEC"  ]] && exit 1
   
 
@@ -123,10 +124,14 @@ echo "$TSURL"|grep -e "^//::1" -e "//127\.0\.0\.1" && export BATCHSIZE=99
     loval=$(cat /tmp/rststatus/seen.$feed/$m|sort -n |head -n1)
     hival=$(cat /tmp/rststatus/seen.$feed/$m|sort -n |tail -n1)
   #echo $loval $hival
+    test -e /tmp/rststatus/sent/$loval.$feed.$m || [[ "$loval" == "$hival" ]] || {
+      touch /tmp/rststatus/sent/$loval.$feed.$m
      loout="$loout"'"'"$(cat /tmp/rststatus/urls.$feed/$m)"'",';lotsout="$lotsout"'"'"$(cat /tmp/rststatus/urls.$feed/$m)"'": '"$loval"',' ;
-    [[ "$loval" == "$hival" ]] || {
+    }
+    test -e /tmp/rststatus/sent/$hival.$feed.$m || [[ "$loval" == "$hival" ]] || {
      hiout="$hiout"'"'"$(cat /tmp/rststatus/urls.$feed/$m)"'",';hitsout="$hitsout"'"'"$(cat /tmp/rststatus/urls.$feed/$m)"'": '"$hival"',' ;
      hictr=$(( $hictr + 1 ))
+     touch /tmp/rststatus/sent/$hival.$feed.$m
     }
   echo -n ; } ; 
   done  
