@@ -31,7 +31,8 @@ export RESTIC_REPOSITORY="$RESTURL";export AWS_SECRET_ACCESS_KEY="$RESTSKY";expo
 export RESTIC_REPOSITORY=/tmp/restic
 deletelist=""
 
-hourslist=$(lftp -e "open ""$DAVURL""feedarchive/;ls ;quit"|sed 's/.\+ --  //g'|grep _|grep "^[0-9]"|sort -u|grep -v $(date +%Y-%m-%d))
+[[  -z "$PRESET_HOURS" ]] && hourslist=$(lftp -e "open ""$DAVURL""feedarchive/;ls ;quit"|sed 's/.\+ --  //g'|grep _|grep "^[0-9]"|sort -u|grep -v $(date +%Y-%m-%d))
+[[  -z "$PRESET_HOURS" ]] || hourslist="$PRESET_HOURS"
 echo "found "$(echo "$hourslist"|wc -l)" hours"
 
 for myhour in $hourslist;do
