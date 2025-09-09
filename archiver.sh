@@ -93,10 +93,10 @@ test -e "/tmp/rststatus/urls.$feed"  || mkdir -p "/tmp/rststatus/urls.$feed"
     redkey="${curlinksum}"
     curvallo=$( redis_read "lo_$redkey")
     curvalhi=$( redis_read "hi_$redkey")
-    [[ -z "$curvallo" ]]                                   && redcmd="$redcmd"' '"lo_$redkey"' "'"${datestamp// /}"'"'
-    [[ -z "$curvallo" ]] || [[ $curvallo -gt $datestamp ]] && redcmd="$redcmd"' '"lo_$redkey"' "'"${datestamp// /}"'"'
-    [[ -z "$curvalhi" ]] || [[ $curvalhi -lt $datestamp ]] && redcmd="$redcmd"' '"hi_$redkey"' "'"${datestamp// /}"'"'
-    [[ -z "$curvalhi" ]]                                   && redcmd="$redcmd"' '"hi_$redkey"' "'"${datestamp// /}"'"'
+    [[ -z "$curvallo" ]]                                   && redcmd="$redcmd"' '"lo_$redkey"' "'"${datestamp// /}"'"' && touch /tmp/rststatus/seen.$feed/$curlinksum
+    [[ -z "$curvallo" ]] || [[ $curvallo -gt $datestamp ]] && redcmd="$redcmd"' '"lo_$redkey"' "'"${datestamp// /}"'"' && touch /tmp/rststatus/seen.$feed/$curlinksum
+    [[ -z "$curvalhi" ]] || [[ $curvalhi -lt $datestamp ]] && redcmd="$redcmd"' '"hi_$redkey"' "'"${datestamp// /}"'"' && touch /tmp/rststatus/seen.$feed/$curlinksum
+    [[ -z "$curvalhi" ]]                                   && redcmd="$redcmd"' '"hi_$redkey"' "'"${datestamp// /}"'"' && touch /tmp/rststatus/seen.$feed/$curlinksum
     #grep -q "^$datestamp" "/tmp/rststatus/seen.$feed/$curlinksum" 2>/dev/null ||  ( echo "$datestamp"  >> "/tmp/rststatus/seen.$feed/$curlinksum"  &&     echo -n "+" ) &
     #echo "$redcmd"
     #echo "$redcmd"|tr -d '\n' | nc 127.0.0.1 6379 2>&1 |grep -v '+OK' &
